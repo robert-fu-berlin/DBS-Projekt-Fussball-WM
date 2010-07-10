@@ -1,5 +1,6 @@
 package active_record;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,14 +11,16 @@ import active_record.finder.MonoNeedsValue;
 public class ConcreteMonoFinder<T extends ActiveRecord> implements
 		InitialMonoFinder<T>, MonoFinder<T>, MonoNeedsValue<T> {
 
+	private ActiveRecordMapper activeRecordMapper;
 	private List<String>	fields;
 	private List<Relation>	relations;
 	private List<Object>	values;
 
-	private ClassMapper<T>	activeRecord;
+	private ClassMapper<T>	classMapper;
 
-	public ConcreteMonoFinder(ClassMapper<T> activeRecord) {
-		this.activeRecord = activeRecord;
+	public ConcreteMonoFinder(ActiveRecordMapper activeRecordMapper, ClassMapper<T> classMapper) {
+		this.classMapper = classMapper;
+		this.activeRecordMapper = activeRecordMapper;
 
 		fields = new ArrayList<String>();
 		relations = new ArrayList<Relation>();
@@ -43,21 +46,12 @@ public class ConcreteMonoFinder<T extends ActiveRecord> implements
 		if (!(fields.size() == relations.size() && relations.size() == values.size()))
 			throw new IllegalStateException("Methods have been called in illegal order"); // XXX find better wording
 		
-		StringBuilder builder = new StringBuilder();
-		
-		for (int i = 0; i < fields.size(); i++) {
-			builder.append(fields.get(i));
-			builder.append(" ");
-			builder.append(relations.get(i).toString());
-			builder.append(" ");
-			builder.append(TypeMapper.postgresify(values.get(i)));
+		try {
+			List<T> results = classMapper.runQueryWithParameters(activeRecordMapper.obtainConnection(), fields, relations, values);
+			return results.size() > 0 ? results.get(0) : null; 
+		} catch (SQLException e) {
+			throw new IllegalStateException(e); // TODO find better exception, consider checked FinderException
 		}
-		
-		System.out.println(builder.toString());
-		
-		// TODO Run SQL statement, parse and return results
-		
-		return null;
 	} 
 
 }
