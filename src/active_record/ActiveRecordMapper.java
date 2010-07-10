@@ -15,7 +15,7 @@ public class ActiveRecordMapper {
 
 	private final String prefix;
 	
-	private Map<Class<? extends ActiveRecord>, ClassMapper<? extends ActiveRecord>> activeTables;
+	private Map<Class<? extends ActiveRecord>, ClassMapper<? extends ActiveRecord>> classMapper;
 	
 	public ActiveRecordMapper(String databaseName, String user, String password, String prefix) {
 		this.url = "jdbc:postgresql:" + databaseName;
@@ -23,12 +23,12 @@ public class ActiveRecordMapper {
 		this.password = password;
 		this.prefix = prefix;
 		
-		this.activeTables = new HashMap<Class<? extends ActiveRecord>, ClassMapper<? extends ActiveRecord>>();
+		this.classMapper = new HashMap<Class<? extends ActiveRecord>, ClassMapper<? extends ActiveRecord>>();
 	}
 	
 	private <A extends ActiveRecord> void register(Class<A> activeRecord) {
-		if (!activeTables.containsKey(activeRecord))
-			activeTables.put(activeRecord, new ClassMapper<A>(activeRecord, this, prefix));
+		if (!classMapper.containsKey(activeRecord))
+			classMapper.put(activeRecord, new ClassMapper<A>(activeRecord, this, prefix));
 	}
 	
 	public <A extends ActiveRecord> A findBy(Class<A> activeRecordClass, Long id) throws SQLException {
@@ -42,19 +42,45 @@ public class ActiveRecordMapper {
 		
 		Connection connection = DriverManager.getConnection(url, user, password);
 		
-		return (A) activeTables.get(activeRecordClass).findById(connection, id);
+		return (A) classMapper.get(activeRecordClass).findById(connection, id);
 	}
+	
 	
 	public <A extends ActiveRecord> InitialMonoFinder<A> find(Class<A> activeRecord) {
 		register(activeRecord);
 		
-		ClassMapper<A> activeTable = (ClassMapper<A>) activeTables.get(activeRecord);
+		ClassMapper<A> activeTable = (ClassMapper<A>) classMapper.get(activeRecord);
 		return new ConcreteMonoFinder<A>(this, activeTable);
 	}
 	
 	Connection obtainConnection() throws SQLException {
 		Connection newConnection = DriverManager.getConnection(url, user, password);
 		return newConnection;
+	}
+
+	// TODO: Replace SQL exception with own exception type
+	public <A extends ActiveRecord> void dropTable(Class<A> activeRecord) throws SQLException {
+		register(activeRecord);
+		Connection connection = obtainConnection();
+	
+		ClassMapper<A> mapper = (ClassMapper<A>) classMapper.get(activeRecord);
+		
+		mapper.dropTable(connection);
+		
+		connection.commit();
+		connection.close();
+	}
+
+	public <A extends ActiveRecord> void createTable(Class<A> activeRecord) throws SQLException {
+		register(activeRecord);
+		Connection connection = obtainConnection();
+	
+		ClassMapper<A> mapper = (ClassMapper<A>) classMapper.get(activeRecord);
+		
+		mapper.createTable(connection);
+		
+		connection.commit();
+		connection.close();
 	}
 
 }

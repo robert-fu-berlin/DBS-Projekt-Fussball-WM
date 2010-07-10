@@ -1,6 +1,8 @@
 package dbs_fussball.model;
 
-public class Stadium {
+import active_record.ActiveRecord;
+
+public class Stadium extends ActiveRecord {
 
 	private Integer maximumOccupancy;
 	private String city, country;

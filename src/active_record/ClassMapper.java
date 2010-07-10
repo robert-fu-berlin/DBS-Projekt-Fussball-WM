@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import apple.laf.CoreUIConstants.State;
+
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Lists;
@@ -118,14 +120,10 @@ class ClassMapper<A extends ActiveRecord> {
 			String column = entry.getKey();
 			String type = TypeMapper.postgresForJava(entry.getValue().getType());
 			
-			System.out.println(column + " : " + type);
-			
 			columnsAndSqlTypes.put(column, type);
 		}
 		
 		String sql = "create table " + tablename + " (" + Joiner.on(", ").withKeyValueSeparator(" ").join(columnsAndSqlTypes) + ");";
-		
-		System.out.println(sql);
 		
 		Statement statement = connection.createStatement();
 		statement.execute(sql);
@@ -135,14 +133,26 @@ class ClassMapper<A extends ActiveRecord> {
 		for (Entry<String, Field> entry : oneToMany.entrySet()) {
 			sql = "create table " + (tablename + '_' + entry.getKey() ) + "(one bigint, many " + TypeMapper.postgresForJava((Class<?>) ((ParameterizedType) entry.getValue().getGenericType()).getActualTypeArguments()[0]) + ");";
 			
-			System.out.println(sql);
-			
 			statement = connection.createStatement();
 			statement.execute(sql);
 			statement.close();
 		}
 	}
 	
+	public void dropTable(Connection connection) throws SQLException {
+		String sql = "drop table " + tablename + ";";
+		Statement statement = connection.createStatement();
+		statement.execute(sql);
+		statement.close();
+		
+		for (Entry<String, Field> entry : oneToMany.entrySet()) {
+			sql = "drop table " + (tablename + '_' + entry.getKey() ) + ";";
+			statement = connection.createStatement();
+			statement.execute(sql);
+			statement.close();			
+		}
+	}
+
 	public void save(Connection connection, A record) throws SQLException {
 		// TODO Validate
 		
@@ -232,8 +242,6 @@ class ClassMapper<A extends ActiveRecord> {
 		
 		String sql = "update " + tablename + " set " + Joiner.on(", ").withKeyValueSeparator(" = ").join(columnsAndValues) + " where id =" + record.getId() + ";";
 		
-		System.out.println(sql);
-		
 		statement.execute(sql);
 		statement.close();
 	}
@@ -318,8 +326,6 @@ class ClassMapper<A extends ActiveRecord> {
 		List<String> columnNames = new ArrayList<String>(columnMap.keySet());
 		
 		String sql = "Select " + Joiner.on(",").join(columnNames) + " from " + tablename + " where " + buffer.toString() + ";"; 
-		
-		System.out.println(sql);
 		
 		Statement statement = connection.createStatement();
 		
