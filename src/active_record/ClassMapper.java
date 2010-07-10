@@ -239,13 +239,7 @@ class ClassMapper<A extends ActiveRecord> {
 	}
 
 	public A findById(Connection connection, Long id) throws SQLException {
-		List<String> columnNames = new ArrayList<String>(columnMap.size());
-		List<Field> fields = new ArrayList<Field>(columnMap.size());
-		
-		for (Entry<String, Field> entry : columnMap.entrySet()) {
-			columnNames.add(entry.getKey());
-			fields.add(entry.getValue());
-		}
+		List<String> columnNames = new ArrayList<String>(columnMap.keySet());
 		
 		Statement statement = connection.createStatement();
 		String sql = "select " + Joiner.on(", ").join(columnNames) + " from " + tablename + " where id =" + id + " limit 1;";
@@ -292,6 +286,46 @@ class ClassMapper<A extends ActiveRecord> {
 		}
 		
 		return results;
+	}
+	
+	/**
+	 * Returns the results of a select query using the given parameters in the where clause, e.g.
+	 * <code>SELECT * FROM Table WHERE fields.get(0) relations.get(0) values.get(0) && fields.get(1) É</code>
+	 * where relations.get(0) is one of the binary relations specified in {@link Relation}.
+	 * 
+	 * @param fields
+	 * @param relations
+	 * @param values
+	 * @return
+	 * @throws SQLException 
+	 */
+	public List<A> runQueryWithParameters(Connection connection, List<String> fields, List<Relation> relations, List<Object>	values) throws SQLException {
+		if (fields.size() != relations.size() || relations.size() != values.size() || values.size() != fields.size())
+			throw new IllegalArgumentException(); // TODO find useful detail message
+		
+		StringBuffer buffer = new StringBuffer();
+		for (int i = 0; i < fields.size(); i++) {
+			buffer.append(javaToUnderscore(fields.get(i)));
+			buffer.append(" ");
+			buffer.append(relations.get(i));
+			buffer.append(" ");
+			buffer.append(TypeMapper.postgresify(values.get(i)));
+			
+			if (i < fields.size() - 1)
+				buffer.append(" and ");
+		}
+		
+		List<String> columnNames = new ArrayList<String>(columnMap.keySet());
+		
+		String sql = "Select " + Joiner.on(",").join(columnNames) + " from " + tablename + " where " + buffer.toString() + ";"; 
+		
+		System.out.println(sql);
+		
+		Statement statement = connection.createStatement();
+		
+		ResultSet resultSet = statement.executeQuery(sql);
+		
+		return fromResultSet(resultSet);
 	}
 	
 	private static String javaToUnderscore(String string) {

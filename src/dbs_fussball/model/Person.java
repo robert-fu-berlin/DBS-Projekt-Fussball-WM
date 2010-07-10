@@ -9,6 +9,10 @@ public class Person extends ActiveRecord {
 	private Date birthDate;
 	private Float height, weight;
 	
+	public Person() {
+		
+	}
+	
 	public Person(String firstName, String lastName) {
 		this.firstName = firstName;
 		this.lastName = lastName;

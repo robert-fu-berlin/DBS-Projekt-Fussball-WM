@@ -49,7 +49,7 @@ public class ActiveRecordMapper {
 		register(activeRecord);
 		
 		ClassMapper<A> activeTable = (ClassMapper<A>) activeTables.get(activeRecord);
-		return new ConcreteMonoFinder<A>(activeTable);
+		return new ConcreteMonoFinder<A>(this, activeTable);
 	}
 	
 	Connection obtainConnection() throws SQLException {
