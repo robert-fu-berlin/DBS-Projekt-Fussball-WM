@@ -6,9 +6,11 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * An implementation of the Set Interface used for lazy retrieval of {@link ActiveRecord} instances.
+ * An implementation of the Set Interface used for lazy retrieval of
+ * {@link ActiveRecord} instances.
  * 
- * @author Robert Bšhnke
+ * @author Robert Bï¿½hnke
+ * @author Elena Weihe
  */
 public class LazySet<T extends ActiveRecord> implements Set<T> {
 
@@ -17,29 +19,32 @@ public class LazySet<T extends ActiveRecord> implements Set<T> {
 	private String contentClass;
 	private ClassMapper<T> activeTable;
 	private Set<T> cache;
-	
+
 	private boolean filledCache = false;
-	
-	public LazySet(ClassMapper<T> activeTable, Long ownerId, String tablename, String contentClass) {
+
+	public LazySet(ClassMapper<T> activeTable, Long ownerId, String tablename,
+			String contentClass) {
 		this.activeTable = activeTable;
 		this.ownerId = ownerId;
 		this.tablename = tablename;
 		this.contentClass = contentClass;
 		this.cache = new HashSet<T>();
 	}
-	
+
 	/**
-	 * Obtains the Active Record and stores them in the cache set.
+	 * Obtains the Active Records from the database and stores them in the cache
+	 * set.
 	 */
 	private void fillCache() {
-	
+		// aus der Datenbank??
+
 	}
 
 	@Override
 	public boolean add(T e) {
 		if (!filledCache)
 			fillCache();
-		
+
 		return cache.add(e);
 	}
 
@@ -47,7 +52,7 @@ public class LazySet<T extends ActiveRecord> implements Set<T> {
 	public boolean addAll(Collection<? extends T> c) {
 		if (!filledCache)
 			fillCache();
-		
+
 		return cache.addAll(c);
 	}
 
@@ -60,7 +65,7 @@ public class LazySet<T extends ActiveRecord> implements Set<T> {
 	public boolean contains(Object o) {
 		if (!filledCache)
 			fillCache();
-		
+
 		return cache.contains(o);
 	}
 
@@ -68,7 +73,7 @@ public class LazySet<T extends ActiveRecord> implements Set<T> {
 	public boolean containsAll(Collection<?> c) {
 		if (!filledCache)
 			fillCache();
-		
+
 		return cache.containsAll(c);
 	}
 
@@ -76,7 +81,7 @@ public class LazySet<T extends ActiveRecord> implements Set<T> {
 	public boolean isEmpty() {
 		if (!filledCache)
 			fillCache();
-		
+
 		return cache.isEmpty();
 	}
 
@@ -84,7 +89,7 @@ public class LazySet<T extends ActiveRecord> implements Set<T> {
 	public Iterator<T> iterator() {
 		if (!filledCache)
 			fillCache();
-		
+
 		return cache.iterator();
 	}
 
@@ -92,7 +97,7 @@ public class LazySet<T extends ActiveRecord> implements Set<T> {
 	public boolean remove(Object o) {
 		if (!filledCache)
 			fillCache();
-		
+
 		return cache.remove(o);
 	}
 
@@ -100,7 +105,7 @@ public class LazySet<T extends ActiveRecord> implements Set<T> {
 	public boolean removeAll(Collection<?> c) {
 		if (!filledCache)
 			fillCache();
-		
+
 		return cache.removeAll(c);
 	}
 
@@ -108,7 +113,7 @@ public class LazySet<T extends ActiveRecord> implements Set<T> {
 	public boolean retainAll(Collection<?> c) {
 		if (!filledCache)
 			fillCache();
-		
+
 		return cache.retainAll(c);
 	}
 
@@ -116,7 +121,7 @@ public class LazySet<T extends ActiveRecord> implements Set<T> {
 	public int size() {
 		if (!filledCache)
 			fillCache();
-		
+
 		return cache.size();
 	}
 
@@ -124,7 +129,7 @@ public class LazySet<T extends ActiveRecord> implements Set<T> {
 	public Object[] toArray() {
 		if (!filledCache)
 			fillCache();
-		
+
 		return cache.toArray();
 	}
 
@@ -132,7 +137,7 @@ public class LazySet<T extends ActiveRecord> implements Set<T> {
 	public <T> T[] toArray(T[] a) {
 		if (!filledCache)
 			fillCache();
-		
+
 		return cache.toArray(a);
 	}
 
