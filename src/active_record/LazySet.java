@@ -1,5 +1,6 @@
 package active_record;
 
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -7,28 +8,40 @@ import java.util.Set;
 
 /**
  * An implementation of the Set Interface used for lazy retrieval of
- * {@link ActiveRecord} instances.
+ * {@link ActiveRecord} instances from the relation tables.
  * 
  * @author Robert B�hnke
  * @author Elena Weihe
  */
 public class LazySet<T extends ActiveRecord> implements Set<T> {
 
+	/**
+	 * primary key of the record the set belongs to ("one")
+	 */
 	private Long ownerId;
+	/**
+	 * name of the relation table the set represents ("many")
+	 */
 	private String tablename;
-	private String contentClass;
+	/**
+	 * mapper of the {@link ActiveRecord} that is stored in the set
+	 */
 	private ClassMapper<T> activeTable;
+	/**
+	 * set to store the {@link ActiveRecord ActiveRecords}
+	 */
 	private Set<T> cache;
 
-	private boolean filledCache = false;
-
-	public LazySet(ClassMapper<T> activeTable, Long ownerId, String tablename,
-			String contentClass) {
+	/**
+	 * 
+	 * @param activeTable mapper of the {@link ActiveRecord} that is stored in the set
+	 * @param ownerId key of the record the set belongs to ("one")
+	 * @param tablename name of the relation table the set represents ("many")
+	 */
+	public LazySet(ClassMapper<T> activeTable, Long ownerId, String tablename) {
 		this.activeTable = activeTable;
 		this.ownerId = ownerId;
 		this.tablename = tablename;
-		this.contentClass = contentClass;
-		this.cache = new HashSet<T>();
 	}
 
 	/**
@@ -36,106 +49,96 @@ public class LazySet<T extends ActiveRecord> implements Set<T> {
 	 * set.
 	 */
 	private void fillCache() {
-		// aus der Datenbank??
-
+		try {
+			cache = new HashSet<T>(activeTable.getSet(tablename, ownerId));
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
-	@Override
 	public boolean add(T e) {
-		if (!filledCache)
+		if (cache == null)
 			fillCache();
 
 		return cache.add(e);
 	}
 
-	@Override
 	public boolean addAll(Collection<? extends T> c) {
-		if (!filledCache)
+		if (cache == null)
 			fillCache();
 
 		return cache.addAll(c);
 	}
 
-	@Override
 	public void clear() {
 		cache.clear();
 	}
 
-	@Override
 	public boolean contains(Object o) {
-		if (!filledCache)
+		if (cache == null)
 			fillCache();
 
 		return cache.contains(o);
 	}
 
-	@Override
 	public boolean containsAll(Collection<?> c) {
-		if (!filledCache)
+		if (cache == null)
 			fillCache();
 
 		return cache.containsAll(c);
 	}
 
-	@Override
 	public boolean isEmpty() {
-		if (!filledCache)
+		if (cache == null)
 			fillCache();
 
 		return cache.isEmpty();
 	}
 
-	@Override
 	public Iterator<T> iterator() {
-		if (!filledCache)
+		if (cache == null)
 			fillCache();
 
 		return cache.iterator();
 	}
 
-	@Override
 	public boolean remove(Object o) {
-		if (!filledCache)
+		if (cache == null)
 			fillCache();
 
 		return cache.remove(o);
 	}
 
-	@Override
 	public boolean removeAll(Collection<?> c) {
-		if (!filledCache)
+		if (cache == null)
 			fillCache();
 
 		return cache.removeAll(c);
 	}
 
-	@Override
 	public boolean retainAll(Collection<?> c) {
-		if (!filledCache)
+		if (cache == null)
 			fillCache();
 
 		return cache.retainAll(c);
 	}
 
-	@Override
 	public int size() {
-		if (!filledCache)
+		if (cache == null)
 			fillCache();
 
 		return cache.size();
 	}
 
-	@Override
 	public Object[] toArray() {
-		if (!filledCache)
+		if (cache == null)
 			fillCache();
 
 		return cache.toArray();
 	}
 
-	@Override
 	public <T> T[] toArray(T[] a) {
-		if (!filledCache)
+		if (cache == null)
 			fillCache();
 
 		return cache.toArray(a);
