@@ -1,5 +1,6 @@
 package dbs_fussball;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,17 +31,30 @@ public class Main {
 				arm.dropTable(activeRecord);
 				System.out.println("Dropped table for " + activeRecord.getSimpleName());
 			} catch (Exception e) {
-				System.out.println("Could not drop table for " + activeRecord.getSimpleName());
-				System.out.println(e.getLocalizedMessage());
+				System.err.println("Could not drop table for " + activeRecord.getSimpleName());
+				System.err.println(e.getLocalizedMessage());
 			}
 			// Create new table
 			try {
 				arm.createTable(activeRecord);
 				System.out.println("Created table for " + activeRecord.getSimpleName());
 			} catch (Exception e) {
-				System.out.println("Could not create table for " + activeRecord.getSimpleName());
-				System.out.println(e.getLocalizedMessage());
+				System.err.println("Could not create table for " + activeRecord.getSimpleName());
+				System.err.println(e.getLocalizedMessage());
 			}
 		}
+		
+		Person lukas = new Person("Lukas", "Podolski");
+		lukas.setStageName("Poldi");
+		
+		try {
+			arm.save(lukas);
+		} catch (SQLException e) {
+			System.err.println("Could not save " + lukas.getLastName());
+		}
+		
+		Person maybeLukas = arm.find(Person.class).where("firstName").is("Lukas").please();
+		
+		System.out.println(maybeLukas.getFirstName() + " " + maybeLukas.getLastName());
 	}
 }

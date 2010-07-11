@@ -31,6 +31,19 @@ public class ActiveRecordMapper {
 			classMapper.put(activeRecord, new ClassMapper<A>(activeRecord, this, prefix));
 	}
 	
+	public <A extends ActiveRecord> void save(A activeRecord) throws SQLException {
+		register(activeRecord.getClass());
+		
+		Connection connection = obtainConnection();
+		
+		ClassMapper<A> mapper = (ClassMapper<A>) classMapper.get(activeRecord.getClass());
+		
+		mapper.save(connection, activeRecord);
+		
+		connection.commit();
+		connection.close();
+	}
+	
 	public <A extends ActiveRecord> A findBy(Class<A> activeRecordClass, Long id) throws SQLException {
 		register(activeRecordClass);
 				
@@ -42,15 +55,20 @@ public class ActiveRecordMapper {
 		
 		Connection connection = DriverManager.getConnection(url, user, password);
 		
-		return (A) classMapper.get(activeRecordClass).findById(connection, id);
+		A result = (A) classMapper.get(activeRecordClass).findById(connection, id);
+		
+		connection.rollback();
+		connection.close();
+		
+		return result;
 	}
 	
 	
 	public <A extends ActiveRecord> InitialMonoFinder<A> find(Class<A> activeRecord) {
 		register(activeRecord);
 		
-		ClassMapper<A> activeTable = (ClassMapper<A>) classMapper.get(activeRecord);
-		return new ConcreteMonoFinder<A>(this, activeTable);
+		ClassMapper<A> mapper = (ClassMapper<A>) classMapper.get(activeRecord);
+		return new ConcreteMonoFinder<A>(this, mapper);
 	}
 	
 	Connection obtainConnection() throws SQLException {

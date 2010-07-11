@@ -1,5 +1,6 @@
 package active_record;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,8 +48,13 @@ public class ConcreteMonoFinder<T extends ActiveRecord> implements
 			throw new IllegalStateException("Methods have been called in illegal order"); // XXX find better wording
 		
 		try {
-			List<T> results = classMapper.runQueryWithParameters(activeRecordMapper.obtainConnection(), fields, relations, values);
-			return results.size() > 0 ? results.get(0) : null; 
+			Connection connection = activeRecordMapper.obtainConnection();
+			List<T> results = classMapper.runQueryWithParameters(connection, fields, relations, values);
+			T result = results.size() > 0 ? results.get(0) : null;
+			
+			connection.commit();
+			connection.close();
+			return result;
 		} catch (SQLException e) {
 			throw new IllegalStateException(e); // TODO find better exception, consider checked FinderException
 		}
