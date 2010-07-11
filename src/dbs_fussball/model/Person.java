@@ -2,6 +2,10 @@ package dbs_fussball.model;
 
 import java.util.Date;
 
+import com.google.common.base.Equivalences;
+import com.google.common.base.Objects;
+import com.google.common.primitives.Primitives;
+
 import active_record.ActiveRecord;
 
 public class Person extends ActiveRecord {
@@ -20,6 +24,48 @@ public class Person extends ActiveRecord {
 	
 	public Person(String stageName) {
 		this.stageName = stageName;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Person))
+			return false;
+		
+		Person other = (Person) obj;
+		
+		if (!Objects.equal(this.id, other.id))
+			return false;
+		
+		if (!Objects.equal(this.firstName, other.firstName))
+			return false;
+	
+		if (!Objects.equal(this.lastName, other.lastName))
+			return false;
+		
+		if (!Objects.equal(this.stageName, other.stageName))
+			return false;
+		
+		if (!Objects.equal(this.club, other.club))
+			return false;
+		
+		if (!Objects.equal(this.birthDate, other.birthDate))
+			return false;
+		
+		if (!Objects.equal(this.height, other.height))
+			return false;
+		
+		if (!Objects.equal(this.weight, other.weight))
+			return false;
+		
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		if (id != null)
+			return id.hashCode();
+		else
+			return Objects.hashCode(firstName, lastName, stageName);
 	}
 	
 	public String getFirstName() {

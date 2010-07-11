@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import dbs_fussball.model.Person;
+
 import active_record.finder.InitialMonoFinder;
 
 public class ActiveRecordMapper {
@@ -44,6 +46,22 @@ public class ActiveRecordMapper {
 		connection.close();
 	}
 	
+	public <A extends ActiveRecord> void delete(A activeRecord) throws SQLException {
+		register(activeRecord.getClass());
+		
+		if (activeRecord.getId() == null)
+			return;
+		
+		Connection connection = obtainConnection();
+		
+		ClassMapper<A> mapper = (ClassMapper<A>) classMapper.get(activeRecord.getClass());
+		
+		mapper.delete(connection, activeRecord);
+		
+		connection.commit();
+		connection.close();
+	}
+
 	public <A extends ActiveRecord> A findBy(Class<A> activeRecordClass, Long id) throws SQLException {
 		register(activeRecordClass);
 				

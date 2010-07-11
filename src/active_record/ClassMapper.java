@@ -162,6 +162,16 @@ class ClassMapper<A extends ActiveRecord> {
 			update(connection, record);
 	}
 	
+	public void delete(Connection connection, A record) throws SQLException {
+		String sql = "delete from " + tablename + " where id = " + record.getId() + ";";
+		
+		Statement statement = connection.createStatement();
+		statement.execute(sql);
+		statement.close();
+		
+		record.setId(null);
+	}
+	
 	/**
 	 * TODO Persist objects in sets (one to many relations) 
 	 * 
@@ -171,6 +181,8 @@ class ClassMapper<A extends ActiveRecord> {
 	 */
 	private void insert(Connection connection, A record) throws SQLException {
 		List<String> columns = new ArrayList<String>(), values = new ArrayList<String>();
+		
+		record.setUpdatedAt(new Date());
 		
 		for (Entry<String, Field> entry : columnMap.entrySet()) {
 			Field field = entry.getValue();
