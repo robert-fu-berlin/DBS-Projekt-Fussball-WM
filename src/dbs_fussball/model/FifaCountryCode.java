@@ -4,7 +4,7 @@ package dbs_fussball.model;
  * Contains a list of all current Fifa country codes as well as codes of former members
  * taken from this list http://www.rsssf.com/miscellaneous/fifa-codes.html
  *
- * @author Robert Bšhnke
+ * @author Robert BÃ¶hnke
  *
  */
 public enum FifaCountryCode {
@@ -23,7 +23,7 @@ public enum FifaCountryCode {
 	COM("Comoros Islands"),
 	CGO("Congo"),
 	COD("Congo DR (Zaire)"),
-	CIV("Cote dÕIvoire"),
+	CIV("Cote dâ€™Ivoire"),
 	DJI("Djibouti"),
 	EGY("Egypt"),
 	EQG("Equatorial Guinea"),
@@ -33,7 +33,7 @@ public enum FifaCountryCode {
 	GAM("Gambia"),
 	GHA("Ghana"),
 	GUI("Guinea"),
-	GNB("Guinea Ð Bissau"),
+	GNB("Guinea â€“ Bissau"),
 	KEN("Kenya"),
 	LES("Lesotho"),
 	LBR("Liberia"),
@@ -266,7 +266,7 @@ public enum FifaCountryCode {
 		
 	/* Old Names of Countries / Independent States */
 	 
-	// LetÕs hope we donÕt need those
+	// Letâ€™s hope we donâ€™t need those
 	 
 //	BOH("Bohemia (Later Czechoslovakia)"),
 //	BUR("Burma (Today Myanmar)"),
