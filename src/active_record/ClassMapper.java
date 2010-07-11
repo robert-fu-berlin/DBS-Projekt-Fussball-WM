@@ -56,7 +56,7 @@ class ClassMapper<A extends ActiveRecord> {
 			Field f = iterator.next();
 			Class<?> type = f.getType();
 			
-			if (f.isSynthetic() || (f.getModifiers() & Modifier.STATIC) != 0) {
+			if (f.isSynthetic() || (f.getModifiers() & (Modifier.TRANSIENT | Modifier.STATIC)) != 0) {
 				iterator.remove();
 				continue;
 			}
@@ -310,7 +310,7 @@ class ClassMapper<A extends ActiveRecord> {
 	
 	/**
 	 * Returns the results of a select query using the given parameters in the where clause, e.g.
-	 * <code>SELECT * FROM Table WHERE fields.get(0) relations.get(0) values.get(0) && fields.get(1) É</code>
+	 * <code>SELECT * FROM Table WHERE fields.get(0) relations.get(0) values.get(0) && fields.get(1) ï¿½</code>
 	 * where relations.get(0) is one of the binary relations specified in {@link Relation}.
 	 * 
 	 * @param fields
