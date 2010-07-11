@@ -13,6 +13,7 @@ public class Team extends ActiveRecord {
 	
 	private Person trainer, assitantTrainer, doctor;
 	
+	/** TODO change this to {@link FifaCountryCode} and handle it’s mapping to a postgres varchar(3) */ 
 	private String nation;
 }
 	
