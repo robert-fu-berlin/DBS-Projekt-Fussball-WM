@@ -3,6 +3,7 @@ package dbs_fussball.model;
 import java.util.Date;
 
 import com.google.common.base.Equivalences;
+import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.primitives.Primitives;
 
@@ -66,6 +67,27 @@ public class Person extends ActiveRecord {
 			return id.hashCode();
 		else
 			return Objects.hashCode(firstName, lastName, stageName);
+	}
+	
+	/**
+	 * Convenience method to access the player's names.
+	 * 
+	 * TODO make that more efficient
+	 * @return
+	 */
+	public String getDisplayName() {
+		String[] names = new String[3];
+		
+		if (firstName != null)
+			names[0] = firstName;
+		
+		if (stageName != null)
+			names[1] = "È"+ stageName + "Ç";
+		
+		if (lastName != null)
+			names[2] = lastName;
+		
+		return Joiner.on(" ").skipNulls().join(names);
 	}
 	
 	public String getFirstName() {

@@ -63,12 +63,6 @@ public class ActiveRecordMapper {
 	public <A extends ActiveRecord> A findBy(Class<A> activeRecordClass, Long id) throws SQLException {
 		register(activeRecordClass);
 				
-		try {
-			Class.forName("org.postgresql.Driver");
-		} catch (ClassNotFoundException e) {
-			throw new IllegalStateException(e);
-		}
-		
 		Connection connection = DriverManager.getConnection(url, user, password);
 		
 		A result = (A) classMapper.get(activeRecordClass).findById(connection, id);
