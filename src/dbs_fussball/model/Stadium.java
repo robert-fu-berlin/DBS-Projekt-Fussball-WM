@@ -4,48 +4,52 @@ import active_record.ActiveRecord;
 
 public class Stadium extends ActiveRecord {
 
+	private String city, country, name;
+	private Double geoLong, geoLat;
 	private Integer maximumOccupancy;
-	private String city, country;
-	private Double geo_long, geo_lat;
-	
-	public Integer getMaximumOccupancy() {
-		return maximumOccupancy;
-	}
-
-	public void setMaximumOccupancy(Integer maximumOccupancy) {
-		this.maximumOccupancy = maximumOccupancy;
-	}
 
 	public String getCity() {
 		return city;
-	}
-
-	public void setCity(String city) {
-		this.city = city;
 	}
 
 	public String getCountry() {
 		return country;
 	}
 
+	public Double getGeoLat() {
+		return geoLat;
+	}
+
+	public Double getGeoLong() {
+		return geoLong;
+	}
+	public Integer getMaximumOccupancy() {
+		return maximumOccupancy;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
 	public void setCountry(String country) {
 		this.country = country;
 	}
-
-	public Double getGeo_long() {
-		return geo_long;
+	public void setGeoLat(Double geoLat) {
+		this.geoLat = geoLat;
 	}
 
-	public void setGeo_long(Double geoLong) {
-		geo_long = geoLong;
+	public void setGeoLong(Double geoLong) {
+		this.geoLong = geoLong;
+	}
+	public void setMaximumOccupancy(Integer maximumOccupancy) {
+		this.maximumOccupancy = maximumOccupancy;
+	}
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	public Double getGeo_lat() {
-		return geo_lat;
-	}
-	
-	public void setGeo_lat(Double geoLat) {
-		geo_lat = geoLat;
-	}
-	
 }

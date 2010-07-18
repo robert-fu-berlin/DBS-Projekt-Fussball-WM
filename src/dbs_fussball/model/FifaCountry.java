@@ -21,7 +21,7 @@ public enum FifaCountry {
 	/*
 	 * Africa
 	 */
-	
+
 	/**
 	 * Algeria
 	 */
@@ -286,7 +286,7 @@ public enum FifaCountry {
 	 * Zimbabwe
 	 */
 	ZIMBABWE("ZIM"),
-	
+
 	/*
 	 * Asia
 	 */
@@ -524,7 +524,7 @@ public enum FifaCountry {
 	/*
 	 * Europe
 	 */
-	
+
 	/**
 	 * Albania
 	 */
@@ -789,7 +789,7 @@ public enum FifaCountry {
 	 * Wales
 	 */
 	WALES("WAL"),
-	
+
 	/*
 	 * North and Middle America
 	 */
@@ -930,12 +930,12 @@ public enum FifaCountry {
 	PUERTO_RICO("PUR"),
 
 	/**
-	 * St Kitts & Nevis
+	 * St. Kitts & Nevis
 	 */
 	ST_KITTS_AND_NEVIS("SKN"),
 
 	/**
-	 * St Lucia
+	 * St. Lucia
 	 */
 	ST_LUCIA("LCA"),
 
@@ -972,7 +972,7 @@ public enum FifaCountry {
 	/*
 	 * Oceania
 	 */
-	
+
 	/**
 	 * American Samoa
 	 */
@@ -1031,7 +1031,7 @@ public enum FifaCountry {
 	/*
 	 * South America
 	 */
-	
+
 	/**
 	 * Argentina
 	 */
@@ -1155,7 +1155,7 @@ public enum FifaCountry {
 	/*
 	 * Old Names of Countries/Independent States
 	 */
-	
+
 	/**
 	 * Burma
 	 */
@@ -1227,7 +1227,7 @@ public enum FifaCountry {
 	ZAIRE("ZAI");
 
 	private static final SetMultimap<FifaCountry, FifaCountry> successors;
-	
+
 	static {
 		/* Successors of indicidual national teams according to
 		 * http://en.wikipedia.org/wiki/List_of_men's_national_association_football_teams#Former_national_football_teams
@@ -1235,29 +1235,29 @@ public enum FifaCountry {
 		successors = HashMultimap.create();
 		successors.put(CZECHOSLOVAKIA, CZECH_REPUBLIC);
 		successors.put(CZECHOSLOVAKIA, SLOVAKIA);
-		
+
 		successors.put(SAARLAND, WEST_GERMANY);
-		
+
 		successors.put(WEST_GERMANY, GERMANY);
-		
+
 		successors.put(EAST_GERMANY, GERMANY);
-		
+
 		successors.put(NORTH_VIETNAM, VIETNAM);
-		
+
 		successors.put(SOUTH_VIETNAM, VIETNAM);
-		
+
 		successors.put(NORTH_YEMEN, YEMEN);
-		
+
 		successors.put(SOUTH_YEMEN, YEMEN);
-		
+
 		successors.put(UNITED_ARAB_REPUBLIC, EGYPT);
 		successors.put(UNITED_ARAB_REPUBLIC, SYRIA);
-		
+
 		successors.put(SOVIET_UNION, COMMONWEALTH_OF_INDEPENDENT_STATES);
 		successors.put(SOVIET_UNION, ESTONIA);
 		successors.put(SOVIET_UNION, LATVIA);
 		successors.put(SOVIET_UNION, LITHUANIA);
-		
+
 		successors.put(COMMONWEALTH_OF_INDEPENDENT_STATES, RUSSIA);
 		successors.put(COMMONWEALTH_OF_INDEPENDENT_STATES, ARMENIA);
 		successors.put(COMMONWEALTH_OF_INDEPENDENT_STATES, AZERBAIJAN);
@@ -1270,25 +1270,25 @@ public enum FifaCountry {
 		successors.put(COMMONWEALTH_OF_INDEPENDENT_STATES, TURKMENISTAN);
 		successors.put(COMMONWEALTH_OF_INDEPENDENT_STATES, UKRAINE);
 		successors.put(COMMONWEALTH_OF_INDEPENDENT_STATES, UZBEKISTAN);
-		
+
 		successors.put(YUGOSLAVIA, SERBIA_AND_MONTENEGRO);
 		successors.put(YUGOSLAVIA, BOSNIA_AND_HERZEGOVINA);
 		successors.put(YUGOSLAVIA, CROATIA);
 		successors.put(YUGOSLAVIA, MACEDONIA_FYR);
 		successors.put(YUGOSLAVIA, SLOVENIA);
-		
+
 		successors.put(SERBIA_AND_MONTENEGRO, SERBIA);
 		successors.put(SERBIA_AND_MONTENEGRO, MONTENEGRO);
-		
+
 		successors.put(TANGANYIKA, TANZANIA);
 	}
-	
+
 	public final String code;
-	
+
 	FifaCountry(String code) {
-		this.code = code;	
+		this.code = code;
 	}
-	
+
 	public Set<FifaCountry> getSuccessors() {
 		// bfs
 		List<FifaCountry> result = new LinkedList<FifaCountry>(successors.get(this));
@@ -1298,5 +1298,5 @@ public enum FifaCountry {
 		}
 		return EnumSet.copyOf(result);
 	}
-	
+
 }
