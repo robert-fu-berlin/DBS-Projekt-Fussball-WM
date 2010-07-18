@@ -5,40 +5,34 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.ImmutableList;
+import active_record.finder.MultiFinder;
+import active_record.finder.MultiNeedsValue;
 
-import active_record.finder.InitialMonoFinder;
-import active_record.finder.MonoFinder;
-import active_record.finder.MonoNeedsValue;
-
-public class ConcreteMonoFinder<T extends ActiveRecord> implements
-		InitialMonoFinder<T>, MonoFinder<T>, MonoNeedsValue<T> {
+public class ConcreteMultiFinder<T extends ActiveRecord> implements
+		MultiFinder<T>, MultiNeedsValue<T> {
 
 	private ActiveRecordMapper activeRecordMapper;
 	private List<String>	fields;
 	private List<Relation>	relations;
 	private List<Object>	values;
+	private List<Boolean> ascendingValues;
+	private List<String> orderByFields;
 
 	private ClassMapper<T>	classMapper;
 
-	public ConcreteMonoFinder(ActiveRecordMapper activeRecordMapper, ClassMapper<T> classMapper) {
+	public ConcreteMultiFinder(ActiveRecordMapper activeRecordMapper, ClassMapper<T> classMapper) {
 		this.classMapper = classMapper;
 		this.activeRecordMapper = activeRecordMapper;
 
 		fields = new ArrayList<String>();
 		relations = new ArrayList<Relation>();
 		values = new ArrayList<Object>();
+		ascendingValues = new ArrayList<Boolean>();
+		orderByFields = new ArrayList<String>();
 	}
 
 	@Override
-	public MonoNeedsValue<T> where(String field) {
-		fields.add(field);
-		return this;
-	}
-
-	@Override
-	public MonoFinder<T> is(Object value) {
+	public MultiFinder<T> is(Object value) {
 		relations.add(Relation.EQUALS);
 		values.add(value);
 		return this;
@@ -46,21 +40,34 @@ public class ConcreteMonoFinder<T extends ActiveRecord> implements
 	}
 
 	@Override
-	public T please() {
+	public List<T> please() {
 		if (!(fields.size() == relations.size() && relations.size() == values.size()))
 			throw new IllegalStateException("Methods have been called in illegal order"); // XXX find better wording
 		
 		try {
 			Connection connection = activeRecordMapper.obtainConnection();
-			List<T> results = classMapper.runQueryWithParameters(connection, fields, relations, values);
-			T result = results.size() > 0 ? results.get(0) : null;
+			List<T> results = classMapper.runQueryWithParameters(connection, fields, relations, values, orderByFields, ascendingValues);
 			
 			connection.commit();
 			connection.close();
-			return result;
+			
+			return results;
 		} catch (SQLException e) {
 			throw new IllegalStateException(e); // TODO find better exception, consider checked FinderException
 		}
-	} 
+	}
+
+	@Override
+	public MultiFinder<T> orderBy(String field, boolean ascending) {
+		orderByFields.add(field);
+		ascendingValues.add(ascending);
+		return this;
+	}
+
+	@Override
+	public MultiNeedsValue<T> where(String field) {
+		fields.add(field);
+		return this;
+	}
 
 }

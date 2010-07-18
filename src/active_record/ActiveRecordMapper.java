@@ -81,6 +81,13 @@ public class ActiveRecordMapper {
 		return new ConcreteMonoFinder<A>(this, mapper);
 	}
 	
+	public <A extends ActiveRecord> ConcreteMultiFinder<A> findAll(Class<A> activeRecord) {
+		register(activeRecord);
+		
+		ClassMapper<A> mapper = (ClassMapper<A>) classMapper.get(activeRecord);
+		return new ConcreteMultiFinder<A>(this, mapper);
+	}
+	
 	Connection obtainConnection() throws SQLException {
 		Connection newConnection = DriverManager.getConnection(url, user, password);
 		return newConnection;

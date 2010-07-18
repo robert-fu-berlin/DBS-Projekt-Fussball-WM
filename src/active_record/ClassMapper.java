@@ -16,8 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import apple.laf.CoreUIConstants.State;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Lists;
@@ -25,6 +23,8 @@ import com.google.common.collect.ImmutableBiMap.Builder;
 
 class ClassMapper<A extends ActiveRecord> {
 
+	//TODO: add bimap mapping column names to member names and back
+	
 	private final String tablename;
 	
 	private final ImmutableBiMap<String, Field> columnMap;
@@ -312,38 +312,73 @@ class ClassMapper<A extends ActiveRecord> {
 	 * Returns the results of a select query using the given parameters in the where clause, e.g.
 	 * <code>SELECT * FROM Table WHERE fields.get(0) relations.get(0) values.get(0) && fields.get(1) �</code>
 	 * where relations.get(0) is one of the binary relations specified in {@link Relation}.
+	 * The results can be ordered optionally by setting "orderByFields" to a non null list of field values.
 	 * 
 	 * @param fields
 	 * @param relations
 	 * @param values
+	 * @param orderByFields
+	 * @param ascendingValues
 	 * @return
 	 * @throws SQLException 
 	 */
-	public List<A> runQueryWithParameters(Connection connection, List<String> fields, List<Relation> relations, List<Object>	values) throws SQLException {
+	public List<A> runQueryWithParameters(Connection connection, List<String> fields, List<Relation> relations, List<Object>	values, List<String> orderByFields, List<Boolean> ascendingValues) throws SQLException {
 		if (fields.size() != relations.size() || relations.size() != values.size() || values.size() != fields.size())
 			throw new IllegalArgumentException(); // TODO find useful detail message
 		
-		StringBuffer buffer = new StringBuffer();
-		for (int i = 0; i < fields.size(); i++) {
-			buffer.append(javaToUnderscore(fields.get(i)));
-			buffer.append(" ");
-			buffer.append(relations.get(i));
-			buffer.append(" ");
-			buffer.append(TypeMapper.postgresify(values.get(i)));
-			
-			if (i < fields.size() - 1)
-				buffer.append(" and ");
+		for (String field : fields) {
+			if (!columnMap.containsKey(javaToUnderscore(field)))
+				throw new IllegalArgumentException("Field " + field + " is not a member of " + mappedClass.getSimpleName());
 		}
+		
+		for (String field : orderByFields) {
+			if (!columnMap.containsKey(javaToUnderscore(field)))
+				throw new IllegalArgumentException("Field " + field + " is not a member of " + mappedClass.getSimpleName());
+		}
+		
+		StringBuffer buffer = new StringBuffer();
+
+		if (!fields.isEmpty()) {
+			buffer.append(" where ");
+			for (int i = 0; i < fields.size(); i++) {
+				buffer.append(javaToUnderscore(fields.get(i)));
+				buffer.append(" ");
+				buffer.append(relations.get(i));
+				buffer.append(" ");
+				buffer.append(TypeMapper.postgresify(values.get(i)));
+				
+				if (i < fields.size() - 1)
+					buffer.append(" and ");
+			}
+		} else
+			buffer.append(" ");		//XXX
 		
 		List<String> columnNames = new ArrayList<String>(columnMap.keySet());
 		
-		String sql = "Select " + Joiner.on(",").join(columnNames) + " from " + tablename + " where " + buffer.toString() + ";"; 
+		if (!orderByFields.isEmpty()) {
+			buffer.append("order by ");
+			for (int i = 0; i<orderByFields.size(); i++) {
+				buffer.append(javaToUnderscore(orderByFields.get(i)));
+				if (ascendingValues.get(i))
+					buffer.append(" asc");
+				else
+					buffer.append(" desc");
+				if (i < orderByFields.size()-1)
+					buffer.append(" ,");
+			}		
+		}
+		
+		String sql = "Select " + Joiner.on(",").join(columnNames) + " from " + tablename + buffer.toString() + ";"; 
 		
 		Statement statement = connection.createStatement();
-		
+
 		ResultSet resultSet = statement.executeQuery(sql);
 		
 		return fromResultSet(resultSet);
+	}
+	
+	public List<A> runQueryWithParameters(Connection connection, List<String> fields, List<Relation> relations, List<Object>	values) throws SQLException {
+		return runQueryWithParameters(connection, fields, relations, values, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
 	}
 	
 	private static String javaToUnderscore(String string) {

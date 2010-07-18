@@ -23,7 +23,7 @@ public class Main {
 		classes.add(Stadium.class);
 		classes.add(Team.class);
 
-		ActiveRecordMapper arm = new ActiveRecordMapper("dbs_fussball", "postgres", "vuvzela", "dbs");
+		ActiveRecordMapper arm = new ActiveRecordMapper("dbs_fussball", "postgres", "vuvuzela", "dbs");
 		// Setup tables
 		for (Class<? extends ActiveRecord> activeRecord : classes) {
 			// Drop existing tables
