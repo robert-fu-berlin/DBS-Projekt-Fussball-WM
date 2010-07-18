@@ -86,12 +86,33 @@ public class PersonServlet extends HttpServlet {
 			IOException {
 		if (request.getPathInfo().matches("^/[0-9]+/edit/?$"))
 			doPostEditPerson(request, response);
+		if (request.getPathInfo().matches("^/[0-9]+/delete/?$"))
+			doPostDeletePerson(request, response);
 		if (request.getPathInfo().matches("^/new/?$"))
 			doPostNewPerson(request, response);
 	}
 
-	private void doPostNewPerson(HttpServletRequest request, HttpServletResponse response) throws ServletException,
-			IOException {
+	private void doPostDeletePerson(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		assert request.getPathInfo().matches("^/[0-9]+/edit/?$");
+
+		String[] pathComponensts = request.getPathInfo().split("/");
+
+		try {
+			Long personId = Long.parseLong(pathComponensts[1]);
+			Person person = arm.findBy(Person.class, personId);
+
+			arm.delete(person);
+
+			if (person != null) {
+				request.setAttribute("person", person);
+				response.sendRedirect(response.encodeRedirectURL(this.getServletContext().getContextPath() + "/person"));
+			}
+		} catch (Exception e) {
+			throw new ServletException(e);
+		}
+	}
+
+	private void doPostNewPerson(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
 			Person person = new Person();
 
@@ -109,8 +130,7 @@ public class PersonServlet extends HttpServlet {
 		}
 	}
 
-	private void doPostEditPerson(HttpServletRequest request, HttpServletResponse response) throws ServletException,
-			IOException {
+	private void doPostEditPerson(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		assert request.getPathInfo().matches("^/[0-9]+/edit/?$");
 
 		String[] pathComponensts = request.getPathInfo().split("/");
