@@ -81,7 +81,7 @@ public class ActiveRecordMapperTest {
 		Person cx = new Person("c" ,"x");
 		Person dw = new Person("d" ,"w");
 		Person ev = new Person("e" ,"v");
-		Person cacau = new Person("Cacau");
+		Person cacau = new Person("Cacau");	//only stage name, neither first- nor lastname
 		arm.save(cacau);
 		arm.save(dw);
 		arm.save(by);
@@ -94,9 +94,35 @@ public class ActiveRecordMapperTest {
 		alphabeticallyByFirst.add(cx);
 		alphabeticallyByFirst.add(dw);
 		alphabeticallyByFirst.add(ev);
-		alphabeticallyByFirst.add(cacau);
+		alphabeticallyByFirst.add(cacau);	//expecting that no firstname is sorted to the end of the list
 		List<Person> maybeAlphabeticallyByFirst = new ArrayList<Person>();
 		maybeAlphabeticallyByFirst = arm.findAll(Person.class).orderBy("firstName", true).please();
 		Assert.assertEquals(alphabeticallyByFirst, maybeAlphabeticallyByFirst);
+	}
+	
+	@Test
+	public void testOrderByMultiple() throws Exception {
+		Person az = new Person("a", "z");
+		Person ay = new Person("a" ,"y");
+		Person cx = new Person("c" ,"x");
+		Person aw = new Person("a" ,"w");
+		Person cv = new Person("c" ,"v");
+		Person cacau = new Person("Cacau");	//only stage name, neither first- nor lastname
+		arm.save(cacau);
+		arm.save(cv);
+		arm.save(ay);
+		arm.save(az);
+		arm.save(aw);
+		arm.save(cx);
+		List<Person> alphabeticallyByFirstAndLast = new ArrayList<Person>();
+		alphabeticallyByFirstAndLast.add(aw);
+		alphabeticallyByFirstAndLast.add(ay);
+		alphabeticallyByFirstAndLast.add(az);
+		alphabeticallyByFirstAndLast.add(cv);
+		alphabeticallyByFirstAndLast.add(cx);
+		alphabeticallyByFirstAndLast.add(cacau);	//expecting that no first- and lastname is sorted to the end of the list
+		List<Person> maybeAlphabeticallyByFirstAndLast = new ArrayList<Person>();
+		maybeAlphabeticallyByFirstAndLast = arm.findAll(Person.class).orderBy("firstName", true).orderBy("lastName", true).please();
+		Assert.assertEquals(alphabeticallyByFirstAndLast, maybeAlphabeticallyByFirstAndLast);
 	}
 }
