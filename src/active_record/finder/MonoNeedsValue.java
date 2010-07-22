@@ -5,5 +5,7 @@ import active_record.ActiveRecord;
 public interface MonoNeedsValue<T extends ActiveRecord> {
 
 	MonoFinder<T> is(Object value);
-	
+
+	MonoFinder<T> isNot(Object value);
+
 }

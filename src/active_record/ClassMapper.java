@@ -210,6 +210,7 @@ class ClassMapper<A extends ActiveRecord> {
 
 		Statement statement = connection.createStatement();
 		String sql = "insert into " + tablename + "(" + Joiner.on(", ").join(columns) + ") values (" + Joiner.on(", ").join(values) + ") returning id;";
+
 		ResultSet result = statement.executeQuery(sql);
 
 		if (result.next()) {
@@ -347,9 +348,8 @@ class ClassMapper<A extends ActiveRecord> {
 	 * @return
 	 * @throws SQLException
 	 */
-	public List<A> runQueryWithParameters(Connection connection, List<String> fields, List<Relation> relations, List<Object>	values, List<String> orderByFields, List<Boolean> ascendingValues) throws SQLException {
-		if (fields.size() != relations.size() || relations.size() != values.size() || values.size() != fields.size())
-			throw new IllegalArgumentException(); // TODO find useful detail message
+	public List<A> runQueryWithParameters(Connection connection, List<String> fields, List<Relation> relations, List<Object>	values, List<Operator> operators, List<String> orderByFields, List<Boolean> ascendingValues, Integer limit) throws SQLException {
+		List<String> columnNames = new ArrayList<String>(columnMap.keySet());
 
 		for (String field : fields) {
 			if (!columnMap.containsKey(javaToUnderscore(field)))
@@ -361,52 +361,57 @@ class ClassMapper<A extends ActiveRecord> {
 				throw new IllegalArgumentException("Field " + field + " is not a member of " + mappedClass.getSimpleName());
 		}
 
-		StringBuffer buffer = new StringBuffer();
+		StringBuffer sqlStatement = new StringBuffer("Select ");
+
+		sqlStatement.append(Joiner.on(",").join(columnNames));
+
+		sqlStatement.append(" from ");
+		sqlStatement.append(tablename);
 
 		if (!fields.isEmpty()) {
-			buffer.append(" where ");
+			sqlStatement.append(" where ");
 			for (int i = 0; i < fields.size(); i++) {
-				buffer.append(javaToUnderscore(fields.get(i)));
-				buffer.append(" ");
-				buffer.append(relations.get(i));
-				buffer.append(" ");
-				buffer.append(TypeMapper.postgresify(values.get(i)));
+				sqlStatement.append(javaToUnderscore(fields.get(i)));
+				sqlStatement.append(" ");
+				sqlStatement.append(relations.get(i));
+				sqlStatement.append(" ");
+				sqlStatement.append(TypeMapper.postgresify(values.get(i)));
 
-				if (i < fields.size() - 1)
-					buffer.append(" and ");
-			}
-		} else
-			buffer.append(" ");		//XXX
-
-		List<String> columnNames = new ArrayList<String>(columnMap.keySet());
-
-		if (!orderByFields.isEmpty()) {
-			buffer.append("order by ");
-			for (int i = 0; i<orderByFields.size(); i++) {
-				buffer.append(javaToUnderscore(orderByFields.get(i)));
-				if (ascendingValues.get(i))
-					buffer.append(" asc");
-				else
-					buffer.append(" desc");
-				if (i < orderByFields.size()-1)
-					buffer.append(" ,");
+				if (i < fields.size() - 1) {
+					sqlStatement.append(" ");
+					sqlStatement.append(operators.get(i));
+					sqlStatement.append(" ");
+				}
 			}
 		}
 
-		String sql = "Select " + Joiner.on(",").join(columnNames) + " from " + tablename + buffer.toString() + ";";
+		if (!orderByFields.isEmpty()) {
+			sqlStatement.append(" order by ");
+			for (int i = 0; i<orderByFields.size(); i++) {
+				sqlStatement.append(javaToUnderscore(orderByFields.get(i)));
+				if (ascendingValues.get(i))
+					sqlStatement.append(" asc");
+				else
+					sqlStatement.append(" desc");
+				if (i < orderByFields.size()-1)
+					sqlStatement.append(" ,");
+			}
+		}
+
+		if (limit != null) {
+			sqlStatement.append(" limit ");
+			sqlStatement.append(limit);
+		}
+
+		sqlStatement.append(';');
 
 		Statement statement = connection.createStatement();
 
-		ResultSet resultSet = statement.executeQuery(sql);
+		ResultSet resultSet = statement.executeQuery(sqlStatement.toString());
 
 		return fromResultSet(resultSet);
 	}
 
-	public List<A> runQueryWithParameters(Connection connection, List<String> fields, List<Relation> relations, List<Object>	values) throws SQLException {
-		return runQueryWithParameters(connection, fields, relations, values, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
-	}
-
-	//TODO rename and catch reserved keywords
 	private static String javaToUnderscore(String string) {
 		StringBuffer result = new StringBuffer();
 

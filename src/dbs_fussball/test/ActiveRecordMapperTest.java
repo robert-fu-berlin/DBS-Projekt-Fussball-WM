@@ -20,7 +20,6 @@ import dbs_fussball.model.Person;
 import dbs_fussball.model.Stadium;
 import dbs_fussball.model.Team;
 
-//TODO fix this u assholez
 public class ActiveRecordMapperTest {
 
 	private ActiveRecordMapper arm;
@@ -64,7 +63,7 @@ public class ActiveRecordMapperTest {
 	public void testFind() throws Exception {
 		Person podolski = new Person("Lukas", "Podolski");
 		arm.save(podolski);
-		Person maybePodolksi = arm.find(Person.class).where("firstName").is("Lukas").where("lastName").is("Podolski").please();
+		Person maybePodolksi = arm.find(Person.class).where("firstName").is("Lukas").and("lastName").is("Podolski").please();
 		Assert.assertEquals(podolski, maybePodolksi);
 	}
 
@@ -77,19 +76,15 @@ public class ActiveRecordMapperTest {
 		Person ronaldoG = new Person("Ronaldo" ,"Gueario");
 		Person ronaldoM = new Person("Ronaldo" ,"Maczinski");
 		Person ronaldoCe = new Person("Ronaldo" ,"Cerritos");
-		arm.save(gomez);
-		arm.save(ronaldoC);
-		arm.save(ronaldoCe);
-		arm.save(ronaldoL);
-		arm.save(ronaldoG);
-		arm.save(ronaldoM);
-		Set<Person> trueRonaldos = new HashSet<Person>();
-		trueRonaldos.add(ronaldoCe);
-		trueRonaldos.add(ronaldoL);
-		trueRonaldos.add(ronaldoG);
-		trueRonaldos.add(ronaldoM);
-		Set<Person> maybeRonaldos = new HashSet<Person>(arm.findAll(Person.class).where("firstName").is("Ronaldo").please());
-		Assert.assertEquals(trueRonaldos, maybeRonaldos);
+		arm.save(gomez, ronaldoC, ronaldoCe, ronaldoL, ronaldoG, ronaldoM);
+		Set<Person> expectedSet = new HashSet<Person>();
+		expectedSet.add(gomez);
+		expectedSet.add(ronaldoCe);
+		expectedSet.add(ronaldoL);
+		expectedSet.add(ronaldoG);
+		expectedSet.add(ronaldoM);
+		Set<Person> resultSet = new HashSet<Person>(arm.findAll(Person.class).where("firstName").is("Ronaldo").or("firstName").is("Mario").please());
+		Assert.assertEquals(expectedSet, resultSet);
 	}
 
 	@Test
