@@ -11,24 +11,42 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import active_record.ActiveRecord;
 import active_record.ActiveRecordMapper;
+import dbs_fussball.model.Cup;
+import dbs_fussball.model.Event;
+import dbs_fussball.model.Match;
 import dbs_fussball.model.Person;
+import dbs_fussball.model.Stadium;
+import dbs_fussball.model.Team;
 
+//TODO fix this u assholez
 public class ActiveRecordMapperTest {
 
 	private ActiveRecordMapper arm;
-	
+
+	private List<Class<? extends ActiveRecord>> classes;
 
 	@Before
 	public void setUp() throws Exception {
-		ActiveRecordMapper arm = new ActiveRecordMapper("dbs_fussball", "postgres", "vuvuzela", "test");
-		arm.createTable(Person.class);
+		classes = new ArrayList<Class<? extends ActiveRecord>>();
+		classes.add(Cup.class);
+		classes.add(Event.class);
+		classes.add(Match.class);
+		classes.add(Person.class);
+		classes.add(Stadium.class);
+		classes.add(Team.class);
+
+		arm = new ActiveRecordMapper("dbs_fussball", "postgres", "vuvuzela", "test");
+		for (Class<? extends ActiveRecord> activeRecord : classes)
+			arm.createTable(activeRecord);
 		this.arm = new ActiveRecordMapper("dbs_fussball", "postgres", "vuvuzela", "test");
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		arm.dropTable(Person.class);
+		for (Class<? extends ActiveRecord> activeRecord : classes)
+			arm.dropTable(activeRecord);
 	}
 
 	@Test
@@ -36,9 +54,9 @@ public class ActiveRecordMapperTest {
 		Person podolski = new Person("Lukas", "Podolski");
 		arm.save(podolski);
 		Long podolksiId = new Long(podolski.getId());
-			
+
 		Person maybePodolksi = arm.findBy(Person.class, podolksiId);
-			
+
 		Assert.assertEquals(podolski, maybePodolksi);
 	}
 
@@ -73,7 +91,7 @@ public class ActiveRecordMapperTest {
 		Set<Person> maybeRonaldos = new HashSet<Person>(arm.findAll(Person.class).where("firstName").is("Ronaldo").please());
 		Assert.assertEquals(trueRonaldos, maybeRonaldos);
 	}
-	
+
 	@Test
 	public void testOrderBy() throws Exception {
 		Person az = new Person("a", "z");
@@ -99,7 +117,7 @@ public class ActiveRecordMapperTest {
 		maybeAlphabeticallyByFirst = arm.findAll(Person.class).orderBy("firstName", true).please();
 		Assert.assertEquals(alphabeticallyByFirst, maybeAlphabeticallyByFirst);
 	}
-	
+
 	@Test
 	public void testOrderByMultiple() throws Exception {
 		Person az = new Person("a", "z");
@@ -124,5 +142,13 @@ public class ActiveRecordMapperTest {
 		List<Person> maybeAlphabeticallyByFirstAndLast = new ArrayList<Person>();
 		maybeAlphabeticallyByFirstAndLast = arm.findAll(Person.class).orderBy("firstName", true).orderBy("lastName", true).please();
 		Assert.assertEquals(alphabeticallyByFirstAndLast, maybeAlphabeticallyByFirstAndLast);
+	}
+
+	@Test
+	public void testEnumSerialization() throws Exception {
+		Event beginEvent = Event.begin();
+		arm.save(beginEvent);
+		Event maybeBeginEvent = arm.findBy(Event.class, beginEvent.getId());
+		Assert.assertEquals(beginEvent.getType(), maybeBeginEvent.getType());
 	}
 }

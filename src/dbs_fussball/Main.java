@@ -6,8 +6,12 @@ import java.util.List;
 
 import active_record.ActiveRecord;
 import active_record.ActiveRecordMapper;
-
-import dbs_fussball.model.*;
+import dbs_fussball.model.Cup;
+import dbs_fussball.model.Event;
+import dbs_fussball.model.Match;
+import dbs_fussball.model.Person;
+import dbs_fussball.model.Stadium;
+import dbs_fussball.model.Team;
 
 public class Main {
 	/**
@@ -43,18 +47,18 @@ public class Main {
 				System.err.println(e.getLocalizedMessage());
 			}
 		}
-		
+
 		Person lukas = new Person("Lukas", "Podolski");
 		lukas.setStageName("Poldi");
-		
+
 		try {
 			arm.save(lukas);
 		} catch (SQLException e) {
 			System.err.println("Could not save " + lukas.getLastName());
 		}
-		
+
 		Person maybeLukas = arm.find(Person.class).where("firstName").is("Lukas").please();
-		
+
 		System.out.println(maybeLukas.getFirstName() + " " + maybeLukas.getLastName());
 	}
 }

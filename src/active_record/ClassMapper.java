@@ -24,66 +24,70 @@ import com.google.common.collect.ImmutableBiMap.Builder;
 class ClassMapper<A extends ActiveRecord> {
 
 	//TODO: add bimap mapping column names to member names and back
-	
+
 	private final String tablename;
-	
+
 	private final ImmutableBiMap<String, Field> columnMap;
-	
+
 	private final ImmutableBiMap<String, Field> oneToMany;
-	
+
 	private final ActiveRecordMapper mapper;
-	
+
 	private Field idField;
-	
+
 	private final Class<A> mappedClass;
-	
+
 	public ClassMapper(Class<A> activeRecord, ActiveRecordMapper mapper, String prefix) {
 		this.tablename = (prefix != null ? prefix + "_" : "") + javaToUnderscore(activeRecord.getSimpleName());
-		
+
 		// Obtain a list of all fields the class has access to.
 		List<Field> fields = new ArrayList<Field>();
 		List<Field> sets = new ArrayList<Field>();
-		
+
 		Class<?> c = activeRecord;
 		while (c != null) {
 			Collections.addAll(fields, c.getDeclaredFields());
 			c = c.getSuperclass();
 		}
-		
+
 		// Filter static and synthetic fields, ensure valid types, add sets as one to many relationships
 		java.util.Iterator<Field> iterator = fields.iterator();
 		while(iterator.hasNext()) {
 			Field f = iterator.next();
+
 			Class<?> type = f.getType();
-			
+
+			if(type.isEnum()) {
+				continue;	//XXX
+			}
+
 			if (f.isSynthetic() || (f.getModifiers() & (Modifier.TRANSIENT | Modifier.STATIC)) != 0) {
 				iterator.remove();
 				continue;
 			}
-			
+
 			if (TypeMapper.hasMapping(type))
 				continue;
-			
+
 			if (type.isAssignableFrom(Set.class)) {
 				ParameterizedType set = (ParameterizedType) f.getGenericType();
-				
+
 				Class<?> setType = (Class<?>) set.getActualTypeArguments()[0];
-				
+
 				if (TypeMapper.hasMapping(setType)) {
 					sets.add(f);
 					iterator.remove();
 					continue;
 				}
 			}
-			
 			throw new IllegalArgumentException("Given type " + type + " " + "of field " + f + " is not mappable");
 		}
-		
+
 		ImmutableBiMap.Builder<String, Field> columnsBuilder = new Builder<String, Field>();
 		for (Field field : fields) {
 			if (sets.contains(field))
 				assert false;
-			
+
 			if (field.getName().equals("id")) {
 				assert idField == null;
 				idField = field;
@@ -92,88 +96,88 @@ class ClassMapper<A extends ActiveRecord> {
 			columnsBuilder.put(javaToUnderscore(field.getName()), field);
 		}
 		columnMap = columnsBuilder.build();
-		
+
 		ImmutableBiMap.Builder<String, Field> oneToManyBuilder = new Builder<String, Field>();
 		for (Field field : sets) {
 			oneToManyBuilder.put(javaToUnderscore(field.getName()), field);
 		}
-		
+
 		this.oneToMany = oneToManyBuilder.build();
-		
+
 		mappedClass = activeRecord;
 		this.mapper = mapper;
 	}
-	
+
 	public void createTable(Connection connection) throws SQLException {
 		if (connection.isClosed())
 			throw new IllegalArgumentException("Connection " + connection + "is closed.");
-		
+
 		Map<String, String> columnsAndSqlTypes = new HashMap<String, String>(columnMap.size());
-		
+
 		// Map java types to their corresponding postgres types
 		for (Entry<String, Field> entry : columnMap.entrySet()) {
 			if (entry.getValue() == idField) {
 				columnsAndSqlTypes.put(entry.getKey(), "serial8 primary key");
 				continue;
 			}
-			
+
 			String column = entry.getKey();
 			String type = TypeMapper.postgresForJava(entry.getValue().getType());
-			
+
 			columnsAndSqlTypes.put(column, type);
 		}
-		
+
 		String sql = "create table " + tablename + " (" + Joiner.on(", ").withKeyValueSeparator(" ").join(columnsAndSqlTypes) + ");";
-		
+
 		Statement statement = connection.createStatement();
 		statement.execute(sql);
 		statement.close();
-		
+
 		// XXX Find better name for columns, add foreign key constraints
 		for (Entry<String, Field> entry : oneToMany.entrySet()) {
 			sql = "create table " + (tablename + '_' + entry.getKey() ) + "(one bigint, many " + TypeMapper.postgresForJava((Class<?>) ((ParameterizedType) entry.getValue().getGenericType()).getActualTypeArguments()[0]) + ");";
-			
+
 			statement = connection.createStatement();
 			statement.execute(sql);
 			statement.close();
 		}
 	}
-	
+
 	public void dropTable(Connection connection) throws SQLException {
 		String sql = "drop table " + tablename + ";";
 		Statement statement = connection.createStatement();
 		statement.execute(sql);
 		statement.close();
-		
+
 		for (Entry<String, Field> entry : oneToMany.entrySet()) {
 			sql = "drop table " + (tablename + '_' + entry.getKey() ) + ";";
 			statement = connection.createStatement();
 			statement.execute(sql);
-			statement.close();			
+			statement.close();
 		}
 	}
 
 	public void save(Connection connection, A record) throws SQLException {
 		// TODO Validate
-		
+
 		if (record.getId() == null)
 			insert(connection, record);
 		else
 			update(connection, record);
 	}
-	
+
 	public void delete(Connection connection, A record) throws SQLException {
 		String sql = "delete from " + tablename + " where id = " + record.getId() + ";";
-		
+
 		Statement statement = connection.createStatement();
 		statement.execute(sql);
 		statement.close();
-		
+
 		record.setId(null);
 	}
-	
+
 	/**
-	 * TODO Persist objects in sets (one to many relations) 
+	 * TODO Persist objects in sets (one to many relations)
 	 * 
 	 * @param connection
 	 * @param record
@@ -181,17 +185,17 @@ class ClassMapper<A extends ActiveRecord> {
 	 */
 	private void insert(Connection connection, A record) throws SQLException {
 		List<String> columns = new ArrayList<String>(), values = new ArrayList<String>();
-		
+
 		record.setUpdatedAt(new Date());
-		
+
 		for (Entry<String, Field> entry : columnMap.entrySet()) {
 			Field field = entry.getValue();
-			
+
 			if (field == idField)
 				continue;
-			
+
 			columns.add(entry.getKey());
-			
+
 			field.setAccessible(true);
 
 			Object value;
@@ -203,19 +207,18 @@ class ClassMapper<A extends ActiveRecord> {
 
 			values.add(TypeMapper.postgresify(value));
 		}
-		
+
 		Statement statement = connection.createStatement();
 		String sql = "insert into " + tablename + "(" + Joiner.on(", ").join(columns) + ") values (" + Joiner.on(", ").join(values) + ") returning id;";
-		
 		ResultSet result = statement.executeQuery(sql);
-		
+
 		if (result.next()) {
 			Long newId = result.getLong(1);
 			record.setId(newId);
 		} else {
 			throw new IllegalStateException();
 		}
-		
+
 		result.close();
 		statement.close();
 	}
@@ -229,15 +232,15 @@ class ClassMapper<A extends ActiveRecord> {
 	 */
 	private void update(Connection connection, A record) throws SQLException {
 		Map<String, String> columnsAndValues = new HashMap<String, String>();
-		
+
 		record.setUpdatedAt(new Date());
-		
+
 		for (Entry<String, Field> entry : columnMap.entrySet()) {
 			Field field = entry.getValue();
-			
+
 			if (field == idField)
 				continue;
-			
+
 			field.setAccessible(true);
 
 			Object value;
@@ -249,31 +252,43 @@ class ClassMapper<A extends ActiveRecord> {
 
 			columnsAndValues.put(entry.getKey(), TypeMapper.postgresify(value));
 		}
-		
+
 		Statement statement = connection.createStatement();
-		
+
 		String sql = "update " + tablename + " set " + Joiner.on(", ").withKeyValueSeparator(" = ").join(columnsAndValues) + " where id =" + record.getId() + ";";
-		
+
 		statement.execute(sql);
 		statement.close();
 	}
 
 	public A findById(Connection connection, Long id) throws SQLException {
 		List<String> columnNames = new ArrayList<String>(columnMap.keySet());
-		
+
 		Statement statement = connection.createStatement();
 		String sql = "select " + Joiner.on(", ").join(columnNames) + " from " + tablename + " where id =" + id + " limit 1;";
-		
+
 		ResultSet resultSet = statement.executeQuery(sql);
-		
+
 		List<A> results = fromResultSet(resultSet);
-		
+
 		if (results.size() == 1)
 			return results.get(0);
 		else
 			return null;
 	}
-	
+
+	private void assignEnumToField(A record, Class<?> type, Field field, String value) throws IllegalArgumentException, IllegalAccessException {
+		// refactor this away
+		for (Object e : type.getEnumConstants()) {
+			Enum<?> en = (Enum<?>) e;
+			if (en.name().equals(value)) {
+				field.set(record, e);
+				return;
+			}
+		}
+		throw new IllegalStateException();
+	}
+
 	/**
 	 * TODO Load objects in sets (one to many relations)
 	 * 
@@ -283,20 +298,30 @@ class ClassMapper<A extends ActiveRecord> {
 	 */
 	private List<A> fromResultSet(ResultSet resultSet) throws SQLException {
 		List<A> results = new ArrayList<A>();
-		
+
 		List<String> columnNames = Lists.newArrayList(columnMap.keySet());
 		List<Field> fields = Lists.newArrayList(columnMap.values());
-		
+
 		while (resultSet.next()) {
 			A record = null;
 			try {
 				record =  mappedClass.newInstance();
-				
+
 				for (int i = 0; i < columnNames.size(); i++) {
-					fields.get(i).setAccessible(true);
-					fields.get(i).set(record, resultSet.getObject(columnNames.get(i)));
+					Field f = fields.get(i);
+					Object v = resultSet.getObject(columnNames.get(i));
+					f.setAccessible(true);
+					Class<?> type = f.getType();
+
+					if (type.isEnum()) {
+						assignEnumToField(record, type, fields.get(i), (String)v);
+					} else if (ActiveRecord.class.isAssignableFrom(type)) {
+						// Handle one-to-one relation ships
+					} else {
+						fields.get(i).set(record, resultSet.getObject(columnNames.get(i)));
+					}
 				}
-				
+
 			} catch (InstantiationException e) {
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
@@ -304,10 +329,10 @@ class ClassMapper<A extends ActiveRecord> {
 			}
 			results.add(record);
 		}
-		
+
 		return results;
 	}
-	
+
 	/**
 	 * Returns the results of a select query using the given parameters in the where clause, e.g.
 	 * <code>SELECT * FROM Table WHERE fields.get(0) relations.get(0) values.get(0) && fields.get(1) �</code>
@@ -320,22 +345,22 @@ class ClassMapper<A extends ActiveRecord> {
 	 * @param orderByFields
 	 * @param ascendingValues
 	 * @return
-	 * @throws SQLException 
+	 * @throws SQLException
 	 */
 	public List<A> runQueryWithParameters(Connection connection, List<String> fields, List<Relation> relations, List<Object>	values, List<String> orderByFields, List<Boolean> ascendingValues) throws SQLException {
 		if (fields.size() != relations.size() || relations.size() != values.size() || values.size() != fields.size())
 			throw new IllegalArgumentException(); // TODO find useful detail message
-		
+
 		for (String field : fields) {
 			if (!columnMap.containsKey(javaToUnderscore(field)))
 				throw new IllegalArgumentException("Field " + field + " is not a member of " + mappedClass.getSimpleName());
 		}
-		
+
 		for (String field : orderByFields) {
 			if (!columnMap.containsKey(javaToUnderscore(field)))
 				throw new IllegalArgumentException("Field " + field + " is not a member of " + mappedClass.getSimpleName());
 		}
-		
+
 		StringBuffer buffer = new StringBuffer();
 
 		if (!fields.isEmpty()) {
@@ -346,15 +371,15 @@ class ClassMapper<A extends ActiveRecord> {
 				buffer.append(relations.get(i));
 				buffer.append(" ");
 				buffer.append(TypeMapper.postgresify(values.get(i)));
-				
+
 				if (i < fields.size() - 1)
 					buffer.append(" and ");
 			}
 		} else
 			buffer.append(" ");		//XXX
-		
+
 		List<String> columnNames = new ArrayList<String>(columnMap.keySet());
-		
+
 		if (!orderByFields.isEmpty()) {
 			buffer.append("order by ");
 			for (int i = 0; i<orderByFields.size(); i++) {
@@ -365,30 +390,31 @@ class ClassMapper<A extends ActiveRecord> {
 					buffer.append(" desc");
 				if (i < orderByFields.size()-1)
 					buffer.append(" ,");
-			}		
+			}
 		}
-		
-		String sql = "Select " + Joiner.on(",").join(columnNames) + " from " + tablename + buffer.toString() + ";"; 
-		
+
+		String sql = "Select " + Joiner.on(",").join(columnNames) + " from " + tablename + buffer.toString() + ";";
+
 		Statement statement = connection.createStatement();
 
 		ResultSet resultSet = statement.executeQuery(sql);
-		
+
 		return fromResultSet(resultSet);
 	}
-	
+
 	public List<A> runQueryWithParameters(Connection connection, List<String> fields, List<Relation> relations, List<Object>	values) throws SQLException {
 		return runQueryWithParameters(connection, fields, relations, values, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
 	}
-	
+
+	//TODO rename and catch reserved keywords
 	private static String javaToUnderscore(String string) {
 		StringBuffer result = new StringBuffer();
-		
+
 		boolean firstNumber = true;
 		result.append(Character.toLowerCase(string.charAt(0)));
 		for (int i = 1; i < string.length(); i++) {
 			char c = string.charAt(i);
-			
+
 			if (Character.isUpperCase(c)) {
 				result.append('_').append(Character.toLowerCase(c));
 			} else if (firstNumber && Character.isDigit(c)) {
@@ -399,7 +425,7 @@ class ClassMapper<A extends ActiveRecord> {
 				firstNumber = true;
 			}
 		}
-		
+
 		return result.toString();
 	}
 }

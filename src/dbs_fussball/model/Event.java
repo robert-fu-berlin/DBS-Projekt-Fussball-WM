@@ -60,10 +60,10 @@ public class Event extends ActiveRecord {
 
 	private String	annotation;
 
-	private Person	primary, secondary;
+	private Person	primaryPerson, secondaryPerson;
 
 	/**
-	 * When the event happened, measured in seconds after the matchÕs start.
+	 * When the event happened, measured in seconds after the matchï¿½s start.
 	 */
 	private Float	time;
 
@@ -96,8 +96,8 @@ public class Event extends ActiveRecord {
 		Event e = new Event();
 		e.type = Type.EXCHANGE;
 		e.time = time;
-		e.primary = oldPlayer;
-		e.secondary = newPlayer;
+		e.primaryPerson = oldPlayer;
+		e.secondaryPerson = newPlayer;
 		return e;
 	}
 
@@ -109,8 +109,8 @@ public class Event extends ActiveRecord {
 		Event e = new Event();
 		e.type = Type.FOUL;
 		e.time = time;
-		e.primary = fouler;
-		e.secondary = foulee;
+		e.primaryPerson = fouler;
+		e.secondaryPerson = foulee;
 		return e;
 	}
 
@@ -118,7 +118,7 @@ public class Event extends ActiveRecord {
 		Event e = new Event();
 		e.type = Type.GOAL;
 		e.time = time;
-		e.primary = scorer;
+		e.primaryPerson = scorer;
 		return e;
 	}
 
@@ -126,7 +126,7 @@ public class Event extends ActiveRecord {
 		Event e = new Event();
 		e.type = Type.OWN_GOAL;
 		e.time = time;
-		e.primary = scorer;
+		e.primaryPerson = scorer;
 		return e;
 	}
 
@@ -134,7 +134,7 @@ public class Event extends ActiveRecord {
 		Event e = new Event();
 		e.type = Type.RED_CARD;
 		e.time = time;
-		e.primary = recipient;
+		e.primaryPerson = recipient;
 		return e;
 	}
 
@@ -142,12 +142,12 @@ public class Event extends ActiveRecord {
 		Event e = new Event();
 		e.type = Type.YELLOW_CARD;
 		e.time = time;
-		e.primary = recipient;
+		e.primaryPerson = recipient;
 		return e;
 	}
 
 	/**
-	 * Public constructor for reflection. Use EventÕs static methods obtain
+	 * Public constructor for reflection. Use Eventï¿½s static methods obtain
 	 * instances of this class.
 	 * TODO find a way to reduce the visibility of this constructor without
 	 * messing up the ActiveRecordMapper
@@ -163,26 +163,26 @@ public class Event extends ActiveRecord {
 
 	/**
 	 * Returns the primary person of this event. The precise meaning of this
-	 * is dependent on this eventÕs {@link Type}.
+	 * is dependent on this eventï¿½s {@link Type}.
 	 * 
 	 * @return
-	 *         This eventÕs secondary person or <code>null</code> if there is
+	 *         This eventï¿½s secondary person or <code>null</code> if there is
 	 *         none.
 	 */
 	public Person getPrimary() {
-		return primary;
+		return primaryPerson;
 	}
 
 	/**
 	 * Returns the secondary person of this event. The precise meaning of this
-	 * is dependent on this eventÕs {@link Type}.
+	 * is dependent on this eventï¿½s {@link Type}.
 	 * 
 	 * @return
-	 *         This eventÕs secondary person or <code>null</code> if there is
+	 *         This eventï¿½s secondary person or <code>null</code> if there is
 	 *         none.
 	 */
 	public Person getSecondary() {
-		return secondary;
+		return secondaryPerson;
 	}
 
 	public Float getTime() {
