@@ -4,7 +4,7 @@ import java.util.List;
 
 import active_record.ActiveRecord;
 
-public interface MultiFinder<T extends ActiveRecord> {
+public interface InitialMultiFinder<T extends ActiveRecord> {
 
 	List<T> please();
 
@@ -14,8 +14,5 @@ public interface MultiFinder<T extends ActiveRecord> {
 
 	MultiFinder<T> orderBy(String field, boolean ascending);
 
-	MultiNeedsValue<T> and(String field);
-
-	MultiNeedsValue<T> or(String field);
-
+	MultiNeedsValue<T> where(String field);
 }

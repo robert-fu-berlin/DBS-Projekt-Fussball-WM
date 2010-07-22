@@ -17,7 +17,7 @@ import dbs_fussball.model.Person;
 public class ActiveRecordMapperTest {
 
 	private ActiveRecordMapper arm;
-	
+
 
 	@Before
 	public void setUp() throws Exception {
@@ -36,9 +36,9 @@ public class ActiveRecordMapperTest {
 		Person podolski = new Person("Lukas", "Podolski");
 		arm.save(podolski);
 		Long podolksiId = new Long(podolski.getId());
-			
+
 		Person maybePodolksi = arm.findBy(Person.class, podolksiId);
-			
+
 		Assert.assertEquals(podolski, maybePodolksi);
 	}
 
@@ -46,7 +46,7 @@ public class ActiveRecordMapperTest {
 	public void testFind() throws Exception {
 		Person podolski = new Person("Lukas", "Podolski");
 		arm.save(podolski);
-		Person maybePodolksi = arm.find(Person.class).where("firstName").is("Lukas").where("lastName").is("Podolski").please();
+		Person maybePodolksi = arm.find(Person.class).where("firstName").is("Lukas").and("lastName").is("Podolski").please();
 		Assert.assertEquals(podolski, maybePodolksi);
 	}
 
@@ -59,21 +59,17 @@ public class ActiveRecordMapperTest {
 		Person ronaldoG = new Person("Ronaldo" ,"Gueario");
 		Person ronaldoM = new Person("Ronaldo" ,"Maczinski");
 		Person ronaldoCe = new Person("Ronaldo" ,"Cerritos");
-		arm.save(gomez);
-		arm.save(ronaldoC);
-		arm.save(ronaldoCe);
-		arm.save(ronaldoL);
-		arm.save(ronaldoG);
-		arm.save(ronaldoM);
-		Set<Person> trueRonaldos = new HashSet<Person>();
-		trueRonaldos.add(ronaldoCe);
-		trueRonaldos.add(ronaldoL);
-		trueRonaldos.add(ronaldoG);
-		trueRonaldos.add(ronaldoM);
-		Set<Person> maybeRonaldos = new HashSet<Person>(arm.findAll(Person.class).where("firstName").is("Ronaldo").please());
-		Assert.assertEquals(trueRonaldos, maybeRonaldos);
+		arm.save(gomez, ronaldoC, ronaldoCe, ronaldoL, ronaldoG, ronaldoM);
+		Set<Person> expectedSet = new HashSet<Person>();
+		expectedSet.add(gomez);
+		expectedSet.add(ronaldoCe);
+		expectedSet.add(ronaldoL);
+		expectedSet.add(ronaldoG);
+		expectedSet.add(ronaldoM);
+		Set<Person> resultSet = new HashSet<Person>(arm.findAll(Person.class).where("firstName").is("Ronaldo").or("firstName").is("Mario").please());
+		Assert.assertEquals(expectedSet, resultSet);
 	}
-	
+
 	@Test
 	public void testOrderBy() throws Exception {
 		Person az = new Person("a", "z");
@@ -99,7 +95,7 @@ public class ActiveRecordMapperTest {
 		maybeAlphabeticallyByFirst = arm.findAll(Person.class).orderBy("firstName", true).please();
 		Assert.assertEquals(alphabeticallyByFirst, maybeAlphabeticallyByFirst);
 	}
-	
+
 	@Test
 	public void testOrderByMultiple() throws Exception {
 		Person az = new Person("a", "z");
