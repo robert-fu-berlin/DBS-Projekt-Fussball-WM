@@ -1,6 +1,7 @@
 package dbs_fussball.model;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -16,9 +17,9 @@ import com.google.common.collect.Iterators;
  * @author Robert B�hnke
  */
 public class Team extends ActiveRecord {
-	private Set<Person>	associates;
+	private final Set<Person>	associates;
 	private FifaCountry	nation;
-	private Set<Person>	players;
+	private final Set<Person>	players;
 	private Person		trainer, assitantTrainer, doctor;
 
 	/**
@@ -28,7 +29,8 @@ public class Team extends ActiveRecord {
 	 * messing up the ActiveRecordMapper
 	 */
 	public Team() {
-
+		players = new HashSet();
+		associates = new HashSet<Person>();
 	}
 
 	public boolean addAssociate(Person associate) {
@@ -112,8 +114,17 @@ public class Team extends ActiveRecord {
 		this.trainer = trainer;
 	}
 
-	public boolean validateForInsert() {
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Team))
+			return false;
 
+		Team other = (Team) obj;
+
+		if (this.id == null || other.id == null)
+			return false;
+
+		return this.id.equals(other.id);
 	}
 
 }

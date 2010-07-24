@@ -1,14 +1,16 @@
 package dbs_fussball.model;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import active_record.ActiveRecord;
 import active_record.Inverse;
+import active_record.ValidationFailure;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
 
 public class Person extends ActiveRecord {
 
@@ -26,16 +28,18 @@ public class Person extends ActiveRecord {
 	 * messing up the ActiveRecordMapper
 	 */
 	public Person() {
-
+		this.playedTeams = new HashSet<Team>();
 	}
 
 	public Person(String firstName, String lastName) {
 		this.firstName = firstName;
 		this.lastName = lastName;
+		this.playedTeams = new HashSet<Team>();
 	}
 
 	public Person(String stageName) {
 		this.stageName = stageName;
+		this.playedTeams = new HashSet<Team>();
 	}
 
 	@Override
@@ -45,39 +49,17 @@ public class Person extends ActiveRecord {
 
 		Person other = (Person) obj;
 
-		if (!Objects.equal(this.id, other.id))
+		if (this.id == null || other.id == null)
 			return false;
 
-		if (!Objects.equal(this.firstName, other.firstName))
-			return false;
-
-		if (!Objects.equal(this.lastName, other.lastName))
-			return false;
-
-		if (!Objects.equal(this.stageName, other.stageName))
-			return false;
-
-		if (!Objects.equal(this.club, other.club))
-			return false;
-
-		if (!Objects.equal(this.birthDate, other.birthDate))
-			return false;
-
-		if (!Objects.equal(this.height, other.height))
-			return false;
-
-		if (!Objects.equal(this.weight, other.weight))
-			return false;
-
-		return true;
+		return this.id.equals(other.id);
 	}
 
 	@Override
 	public int hashCode() {
-		if (id != null)
-			return id.hashCode();
-		else
-			return Objects.hashCode(firstName, lastName, stageName);
+		if (id == null)
+			return 0;
+		return id.hashCode();
 	}
 
 	/**
@@ -168,5 +150,25 @@ public class Person extends ActiveRecord {
 		if (playedTeams == null)
 			playedTeams = new HashSet<Team>();
 		this.playedTeams.add(playedTeam);
+	}
+
+	@Override
+	public List<ValidationFailure> validate() {
+		List<ValidationFailure> failureList = new ArrayList<ValidationFailure>();
+		if ((firstName == null || lastName == null) && stageName == null)
+			failureList.add(new ValidationFailure("A person must have either first and last or stage name"));
+		if (weight != null && (weight < 0 || weight == Float.NaN || weight == Float.POSITIVE_INFINITY))
+			failureList.add(new ValidationFailure("Weight must be positive, but not infinit"));
+		if (height != null && (height < 0 || height == Float.NaN || height == Float.POSITIVE_INFINITY))
+			failureList.add(new ValidationFailure("Height must be positive, but not infinit"));
+		return failureList;
+	}
+
+	@Override
+	public List<ValidationFailure> validateAssociated() {
+		List<ValidationFailure> failureList = validate();
+		for (Team t : playedTeams)
+			failureList.addAll(t.validate());
+		return failureList;
 	}
 }

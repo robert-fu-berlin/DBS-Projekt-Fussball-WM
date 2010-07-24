@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,6 +23,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.ImmutableBiMap.Builder;
 
 class ClassMapper<A extends ActiveRecord> {
+
+	private final String LEFT_COLUMN = "cheesecake", RIGHT_COLUMN = "cherrybomb";
 
 	//TODO: add bimap mapping column names to member names and back
 
@@ -59,21 +62,19 @@ class ClassMapper<A extends ActiveRecord> {
 
 			Class<?> type = f.getType();
 
-			if(type.isEnum()) {
-				continue;
-			}
-
 			if (f.isSynthetic() || (f.getModifiers() & (Modifier.TRANSIENT | Modifier.STATIC)) != 0) {
 				iterator.remove();
 				continue;
 			}
+
+			if(type.isEnum())
+				continue;
 
 			if (TypeMapper.hasMapping(type))
 				continue;
 
 			if (type.isAssignableFrom(Set.class)) {
 				ParameterizedType set = (ParameterizedType) f.getGenericType();
-
 				Class<?> setType = (Class<?>) set.getActualTypeArguments()[0];
 
 				if (TypeMapper.hasMapping(setType)) {
@@ -189,7 +190,7 @@ class ClassMapper<A extends ActiveRecord> {
 			if (exists(connection, entry.getKey()))
 				continue;
 
-			sql = "create table " + entry.getKey() + "(one bigint, many " + TypeMapper.postgresForJava((Class<?>) ((ParameterizedType) entry.getValue().getGenericType()).getActualTypeArguments()[0]) + ");";
+			sql = "create table " + entry.getKey() + "(" + LEFT_COLUMN + " bigint, " + RIGHT_COLUMN + " " + TypeMapper.postgresForJava((Class<?>) ((ParameterizedType) entry.getValue().getGenericType()).getActualTypeArguments()[0]) + ");";
 
 			statement = connection.createStatement();
 			statement.execute(sql);
@@ -214,22 +215,74 @@ class ClassMapper<A extends ActiveRecord> {
 	}
 
 	public void save(Connection connection, A record) throws SQLException {
-		// TODO Validate
+		if (!record.validateAssociated().isEmpty())
+			throw new IllegalStateException(record.validate().get(0).toString()); //XXX
 
 		if (record.getId() == null)
 			insert(connection, record);
 		else
 			update(connection, record);
-	}
 
-	public void delete(Connection connection, A record) throws SQLException {
-		String sql = "delete from " + tablename + " where id = " + record.getId() + ";";
+		for (Entry<String, Field> entry : oneToMany.entrySet()) {
+			Field f = entry.getValue();
+			String relation = entry.getKey();
+			Set<? extends ActiveRecord> set;
+			boolean inverse = f.isAnnotationPresent(Inverse.class);
+			try {
+				f.setAccessible(true);
+				set = (Set<? extends ActiveRecord>) f.get(record);
+			} catch (IllegalArgumentException e) {
+				throw new IllegalStateException();
+			} catch (IllegalAccessException e) {
+				throw new IllegalStateException();
+			}
 
-		Statement statement = connection.createStatement();
-		statement.execute(sql);
-		statement.close();
+			String deleteSql = "delete from " + relation + " where " + (inverse ? RIGHT_COLUMN : LEFT_COLUMN) + " = " + record.getId() + ";";
+			Statement deleteStatement = connection.createStatement();
+			deleteStatement.execute(deleteSql);
 
-		record.setId(null);
+			if (set == null || set.isEmpty())
+				continue;
+
+			StringBuffer sqlStatement = new StringBuffer("Insert into ");
+			sqlStatement.append(relation);
+			sqlStatement.append(" (");
+			if (inverse) {
+				sqlStatement.append(RIGHT_COLUMN);
+				sqlStatement.append(",");
+				sqlStatement.append(LEFT_COLUMN);
+			} else {
+				sqlStatement.append(LEFT_COLUMN);
+				sqlStatement.append(",");
+				sqlStatement.append(RIGHT_COLUMN);
+			}
+			sqlStatement.append(") values ");
+
+			boolean first = true;
+			for (ActiveRecord a : set) {
+				/*
+				 * Save <code>a</code> if it hasn't been saved before.
+				 */
+				if (a.getId() == null) {
+					ClassMapper classMapper = mapper.getClassMapperForClass(a.getClass());
+					classMapper.save(connection, a);
+				}
+
+				System.out.println(mappedClass.getSimpleName() + "." + f.getName() + " contains " + a);
+				if (!first)
+					sqlStatement.append(", ");
+				sqlStatement.append("(");
+				sqlStatement.append(record.getId());
+				sqlStatement.append(",");
+				sqlStatement.append(a.getId());
+				sqlStatement.append(")");
+				first = false;
+			}
+			sqlStatement.append(";");
+			Statement insertStatement = connection.createStatement();
+			System.out.println(sqlStatement);
+			insertStatement.execute(sqlStatement.toString());
+		}
 	}
 
 	/**
@@ -275,7 +328,6 @@ class ClassMapper<A extends ActiveRecord> {
 		} else {
 			throw new IllegalStateException();
 		}
-
 		result.close();
 		statement.close();
 	}
@@ -318,6 +370,16 @@ class ClassMapper<A extends ActiveRecord> {
 		statement.close();
 	}
 
+	public void delete(Connection connection, A record) throws SQLException {
+		String sql = "delete from " + tablename + " where id = " + record.getId() + ";";
+
+		Statement statement = connection.createStatement();
+		statement.execute(sql);
+		statement.close();
+
+		record.setId(null);
+	}
+
 	public A findById(Connection connection, Long id) throws SQLException {
 		List<String> columnNames = new ArrayList<String>(columnMap.keySet());
 
@@ -336,6 +398,11 @@ class ClassMapper<A extends ActiveRecord> {
 
 	private void assignEnumToField(A record, Class<?> type, Field field, String value) throws IllegalArgumentException, IllegalAccessException {
 		// refactor this away
+		if (value == null || value.equals("null")) {
+			field.set(record, null);
+			return;
+		}
+
 		for (Object e : type.getEnumConstants()) {
 			Enum<?> en = (Enum<?>) e;
 			if (en.name().equals(value)) {
@@ -343,7 +410,7 @@ class ClassMapper<A extends ActiveRecord> {
 				return;
 			}
 		}
-		throw new IllegalStateException();
+		throw new IllegalStateException("Enum " + field.getType().getName() + " does not have a value " + value);
 	}
 
 	/**
@@ -377,6 +444,18 @@ class ClassMapper<A extends ActiveRecord> {
 					} else {
 						fields.get(i).set(record, resultSet.getObject(columnNames.get(i)));
 					}
+				}
+
+				for (Entry<String, Field> entry : oneToMany.entrySet()) {
+					Field f = entry.getValue();
+					boolean inverse = f.isAnnotationPresent(Inverse.class);
+					ParameterizedType set = (ParameterizedType) f.getGenericType();
+					Class<? extends ActiveRecord> setType = (Class<? extends ActiveRecord>) set.getActualTypeArguments()[0];
+					ClassMapper<? extends ActiveRecord> mapperForLazySet = mapper.getClassMapperForClass(setType);
+					LazySet<?> lazySet = new LazySet<ActiveRecord>(mapper, (ClassMapper<ActiveRecord>) mapperForLazySet, entry.getKey(), record.getId(), inverse);
+
+					f.setAccessible(true);
+					f.set(record, lazySet);
 				}
 
 			} catch (InstantiationException e) {
@@ -488,5 +567,43 @@ class ClassMapper<A extends ActiveRecord> {
 		}
 
 		return result.toString();
+	}
+
+	public Set<A> obtainContentsOfRelation(Connection connection, String relationName, Long ownerId, boolean inverse) throws SQLException {
+		StringBuffer sqlStatement = new StringBuffer();
+		sqlStatement.append("select ");
+		sqlStatement.append(Joiner.on(",").join(columnMap.keySet()));
+		sqlStatement.append(" from ");
+		sqlStatement.append(tablename);
+		sqlStatement.append(" join ");
+		sqlStatement.append(relationName);
+		sqlStatement.append(" on ");
+		sqlStatement.append(relationName);
+		sqlStatement.append(".");
+
+		if (inverse)
+			sqlStatement.append(LEFT_COLUMN);
+		else
+			sqlStatement.append(RIGHT_COLUMN);
+
+		sqlStatement.append(" = ");
+		sqlStatement.append(tablename);
+		sqlStatement.append(".id where ");
+
+		sqlStatement.append(relationName);
+		sqlStatement.append(".");
+		if (inverse)
+			sqlStatement.append(RIGHT_COLUMN);
+		else
+			sqlStatement.append(LEFT_COLUMN);
+		sqlStatement.append(" = ");
+		sqlStatement.append(ownerId);
+		sqlStatement.append(";");
+
+		System.out.println(sqlStatement.toString());
+
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery(sqlStatement.toString());
+		return new HashSet<A>(fromResultSet(resultSet));
 	}
 }
