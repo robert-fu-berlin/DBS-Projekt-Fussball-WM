@@ -13,6 +13,9 @@ import org.junit.Test;
 
 import active_record.ActiveRecord;
 import active_record.ActiveRecordMapper;
+
+import com.google.common.collect.Sets;
+
 import dbs_fussball.model.Cup;
 import dbs_fussball.model.Event;
 import dbs_fussball.model.Match;
@@ -144,5 +147,35 @@ public class ActiveRecordMapperTest {
 		arm.save(beginEvent);
 		Event maybeBeginEvent = arm.findBy(Event.class, beginEvent.getId());
 		Assert.assertEquals(beginEvent.getType(), maybeBeginEvent.getType());
+	}
+
+	@Test
+	public void testLazySet() throws Exception {
+		Team team = new Team();
+		Set<Person> supposedPlayers = new HashSet<Person>();
+
+		Person poldi = new Person("Lukas", "Podolski");
+		Person cacau = new Person("Cacau");
+		Person gomez = new Person("Mario", "Gomez");
+		Person wiese = new Person("Tim", "Wiese");
+
+		team.addPlayer(poldi);
+		team.addPlayer(cacau);
+		team.addPlayer(gomez);
+		team.addPlayer(wiese);
+
+		arm.save(team);
+
+		supposedPlayers.add(poldi);
+		supposedPlayers.add(cacau);
+		supposedPlayers.add(gomez);
+		supposedPlayers.add(wiese);
+
+		Team anderesTeam = arm.findBy(Team.class, team.getId());
+
+		Set<Person> otherPlayers = Sets.newHashSet(anderesTeam.players());
+
+		Assert.assertEquals(supposedPlayers, otherPlayers);
+
 	}
 }
