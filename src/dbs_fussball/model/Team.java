@@ -13,7 +13,7 @@ import com.google.common.collect.Iterators;
  * This class represents teams taking part in world cups.
  * TODO write proper constructors, consider a builder
  *
- * @author Robert Bšhnke
+ * @author Robert Bï¿½hnke
  */
 public class Team extends ActiveRecord {
 	private Set<Person>	associates;
@@ -22,7 +22,7 @@ public class Team extends ActiveRecord {
 	private Person		trainer, assitantTrainer, doctor;
 
 	/**
-	 * Public constructor for reflection. Use EventÕs static methods obtain
+	 * Public constructor for reflection. Use Eventï¿½s static methods obtain
 	 * instances of this class.
 	 * TODO find a way to reduce the visibility of this constructor without
 	 * messing up the ActiveRecordMapper
@@ -56,6 +56,7 @@ public class Team extends ActiveRecord {
 	}
 
 	public boolean addPlayer(Person associate) {
+		associate.createInversePlayed(this);
 		return players.add(associate);
 	}
 
@@ -109,6 +110,10 @@ public class Team extends ActiveRecord {
 
 	public void setTrainer(Person trainer) {
 		this.trainer = trainer;
+	}
+
+	public boolean validateForInsert() {
+
 	}
 
 }

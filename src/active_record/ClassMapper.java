@@ -39,6 +39,8 @@ class ClassMapper<A extends ActiveRecord> {
 
 	public ClassMapper(Class<A> activeRecord, ActiveRecordMapper mapper, String prefix) {
 		this.tablename = (prefix != null ? prefix + "_" : "") + javaToUnderscore(activeRecord.getSimpleName());
+		this.mappedClass = activeRecord;
+		this.mapper = mapper;
 
 		// Obtain a list of all fields the class has access to.
 		List<Field> fields = new ArrayList<Field>();
@@ -58,7 +60,7 @@ class ClassMapper<A extends ActiveRecord> {
 			Class<?> type = f.getType();
 
 			if(type.isEnum()) {
-				continue;	//XXX
+				continue;
 			}
 
 			if (f.isSynthetic() || (f.getModifiers() & (Modifier.TRANSIENT | Modifier.STATIC)) != 0) {
@@ -99,13 +101,62 @@ class ClassMapper<A extends ActiveRecord> {
 
 		ImmutableBiMap.Builder<String, Field> oneToManyBuilder = new Builder<String, Field>();
 		for (Field field : sets) {
-			oneToManyBuilder.put(javaToUnderscore(field.getName()), field);
+			if (field.isAnnotationPresent(Inverse.class))
+				oneToManyBuilder.put(tableNameForInverse(field), field);
+			else
+				oneToManyBuilder.put(tablename + "_" + javaToUnderscore(field.getName()), field);
 		}
 
 		this.oneToMany = oneToManyBuilder.build();
+	}
 
-		mappedClass = activeRecord;
-		this.mapper = mapper;
+	private String tableNameForInverse(Field field) {
+		String value = field.getAnnotation(Inverse.class).value();
+
+		if (!value.matches("^(([a-zA-Z_])+\\.)*([A-Za-z])+\\.[A-Za-z0-9\\$]+$"))
+			throw new IllegalArgumentException();
+
+		String className = value.replaceAll("\\.[a-zA-Z0-9\\$]+$", "");
+		String member = value.replaceAll("^(([a-zA-Z_])+\\.)+", "");
+		assert (className + "." + member).equals(value);
+		Class<?> clazz;
+		try {
+			clazz = Class.forName(className);
+			Class<?> c = clazz;
+			Field original = null;
+			superclass : while (c != null) {
+				for (Field f : c.getDeclaredFields()) {
+					if (f.getName().equals(member)) {
+						original = f;
+						break superclass;
+					}
+				}
+				c = c.getSuperclass();
+			}
+			if (original == null)
+				throw new IllegalArgumentException("Member " + member + " does not exist in " + className);
+			if (original.getAnnotation(Inverse.class) != null)
+				throw new IllegalStateException("Inverse must not specify an inverse itself");
+
+			ClassMapper<? extends ActiveRecord> clazzMapper = mapper.getClassMapperForClass((Class<? extends ActiveRecord>)clazz);
+			return clazzMapper.oneToMany.inverse().get(original);
+		} catch (ClassNotFoundException e) {
+			throw new IllegalStateException(e);	//XXX
+		}
+	}
+
+	private boolean exists(Connection connection, String tableName) throws SQLException {
+		String sql = "select count(*) from pg_tables where schemaname = 'public' and tablename = '" + tableName + "';";
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery(sql);
+
+		boolean result = false;
+
+		if (resultSet.next())
+			result = resultSet.getInt(1) == 1;
+
+		statement.close();
+		return result;
 	}
 
 	public void createTable(Connection connection) throws SQLException {
@@ -135,7 +186,10 @@ class ClassMapper<A extends ActiveRecord> {
 
 		// XXX Find better name for columns, add foreign key constraints
 		for (Entry<String, Field> entry : oneToMany.entrySet()) {
-			sql = "create table " + (tablename + '_' + entry.getKey() ) + "(one bigint, many " + TypeMapper.postgresForJava((Class<?>) ((ParameterizedType) entry.getValue().getGenericType()).getActualTypeArguments()[0]) + ");";
+			if (exists(connection, entry.getKey()))
+				continue;
+
+			sql = "create table " + entry.getKey() + "(one bigint, many " + TypeMapper.postgresForJava((Class<?>) ((ParameterizedType) entry.getValue().getGenericType()).getActualTypeArguments()[0]) + ");";
 
 			statement = connection.createStatement();
 			statement.execute(sql);
@@ -150,7 +204,9 @@ class ClassMapper<A extends ActiveRecord> {
 		statement.close();
 
 		for (Entry<String, Field> entry : oneToMany.entrySet()) {
-			sql = "drop table " + (tablename + '_' + entry.getKey() ) + ";";
+			if (!exists(connection, entry.getKey()))
+				continue;
+			sql = "drop table " + entry.getKey() + ";";
 			statement = connection.createStatement();
 			statement.execute(sql);
 			statement.close();

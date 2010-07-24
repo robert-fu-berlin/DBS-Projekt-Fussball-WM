@@ -130,4 +130,9 @@ public class ActiveRecordMapper {
 		connection.close();
 	}
 
+	<T extends ActiveRecord> ClassMapper<T> getClassMapperForClass(Class<T> activeRecord) {
+		register(activeRecord);
+		return (ClassMapper<T>) classMapper.get(activeRecord);
+	}
+
 }

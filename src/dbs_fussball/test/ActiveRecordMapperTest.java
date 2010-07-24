@@ -39,7 +39,6 @@ public class ActiveRecordMapperTest {
 		arm = new ActiveRecordMapper("dbs_fussball", "postgres", "vuvuzela", "test");
 		for (Class<? extends ActiveRecord> activeRecord : classes)
 			arm.createTable(activeRecord);
-		this.arm = new ActiveRecordMapper("dbs_fussball", "postgres", "vuvuzela", "test");
 	}
 
 	@After

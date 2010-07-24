@@ -1,19 +1,26 @@
 package dbs_fussball.model;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import active_record.ActiveRecord;
+import active_record.Inverse;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 
 public class Person extends ActiveRecord {
+
 	private String firstName, lastName, stageName, club;
 	private Date birthDate;
 	private Float height, weight;
 
+	@Inverse("dbs_fussball.model.Team.players")
+	private Set<Team> playedTeams;
+
 	/**
-	 * Public constructor for reflection. Use EventÕs static methods obtain
+	 * Public constructor for reflection. Use Eventï¿½s static methods obtain
 	 * instances of this class.
 	 * TODO find a way to reduce the visibility of this constructor without
 	 * messing up the ActiveRecordMapper
@@ -87,7 +94,7 @@ public class Person extends ActiveRecord {
 		}
 
 		if (stageName != null) {
-			names[1] = "È"+ stageName + "Ç";
+			names[1] = "ï¿½"+ stageName + "ï¿½";
 		}
 
 		if (lastName != null) {
@@ -151,5 +158,15 @@ public class Person extends ActiveRecord {
 
 	public void setWeight(Float weight) {
 		this.weight = weight;
+	}
+
+	/**
+	 * Adds a team in which this person is a player
+	 * @param playedTeam
+	 */
+	void createInversePlayed(Team playedTeam) {
+		if (playedTeams == null)
+			playedTeams = new HashSet<Team>();
+		this.playedTeams.add(playedTeam);
 	}
 }
