@@ -77,13 +77,6 @@ class ClassMapper<A extends ActiveRecord> {
 				ParameterizedType set = (ParameterizedType) f.getGenericType();
 				Class<?> setType = (Class<?>) set.getActualTypeArguments()[0];
 
-				if (f.isAnnotationPresent(Inverse.class)) {
-					if (ActiveRecord.class.isAssignableFrom(setType)) {
-						iterator.remove();
-						continue;
-					} else
-						throw new IllegalArgumentException("Type of inverse must be an ActiveRecord");
-				}
 				if (TypeMapper.hasMapping(setType)) {
 					sets.add(f);
 					iterator.remove();
@@ -180,16 +173,6 @@ class ClassMapper<A extends ActiveRecord> {
 				continue;
 			}
 
-			//specify behavior for foreign keys on delete
-			if (ActiveRecord.class.isAssignableFrom(entry.getValue().getType())) {
-				Field f = entry.getValue();
-				ClassMapper<? extends ActiveRecord> classMapper = mapper.getClassMapperForClass((Class<? extends ActiveRecord>)f.getType());
-				String tableName = classMapper.tablename;
-				String type = TypeMapper.postgresForJava(f.getType());
-				columnsAndSqlTypes.put(entry.getKey(), type + " references " + tableName + " on delete set null");
-				continue;
-			}
-
 			String column = entry.getKey();
 			String type = TypeMapper.postgresForJava(entry.getValue().getType());
 
@@ -202,59 +185,24 @@ class ClassMapper<A extends ActiveRecord> {
 		statement.execute(sql);
 		statement.close();
 
-		createAssociated(connection);
-	}
-
-	private void createAssociated(Connection connection)
-	throws SQLException {
-		// XXX Find better name for columns
+		// XXX Find better name for columns, add foreign key constraints
 		for (Entry<String, Field> entry : oneToMany.entrySet()) {
 			if (exists(connection, entry.getKey()))
 				continue;
 
-			Field f = entry.getValue();
-			Class<?> type = (Class<?>) ((ParameterizedType) entry.getValue().getGenericType()).getActualTypeArguments()[0];
+			sql = "create table " + entry.getKey() + "(" + LEFT_COLUMN + " bigint, " + RIGHT_COLUMN + " " + TypeMapper.postgresForJava((Class<?>) ((ParameterizedType) entry.getValue().getGenericType()).getActualTypeArguments()[0]) + ");";
 
-			StringBuffer sqlStatement = new StringBuffer();
-			sqlStatement.append("create table ");
-			sqlStatement.append(entry.getKey());
-			sqlStatement.append("(");
-			sqlStatement.append(LEFT_COLUMN);
-			sqlStatement.append(" bigint references ");
-
-			if (f.isAnnotationPresent(Inverse.class)) {
-				ClassMapper<? extends ActiveRecord> inverseMapper = mapper.getClassMapperForClass((Class<? extends ActiveRecord>)type);
-				sqlStatement.append(inverseMapper.tablename);
-				sqlStatement.append(" on delete cascade, ");
-				sqlStatement.append(RIGHT_COLUMN);
-				sqlStatement.append(" bigint, references");
-				sqlStatement.append(tablename);
-				sqlStatement.append(" on delete cascade);");
-			} else {
-				sqlStatement.append(tablename);
-				sqlStatement.append(" on delete cascade, ");
-				sqlStatement.append(RIGHT_COLUMN);
-				sqlStatement.append(" ");
-				if (ActiveRecord.class.isAssignableFrom(type)) {
-					ClassMapper<? extends ActiveRecord> classMapper = mapper.getClassMapperForClass((Class<? extends ActiveRecord>)type);
-					sqlStatement.append("bigint references ");
-					sqlStatement.append(classMapper.tablename);
-					sqlStatement.append(" on delete cascade);");
-				} else {
-					sqlStatement.append(TypeMapper.postgresForJava(type));
-					sqlStatement.append(");");
-				}
-			}
-
-			Statement statement = connection.createStatement();
-			statement.execute(sqlStatement.toString());
+			statement = connection.createStatement();
+			statement.execute(sql);
 			statement.close();
 		}
 	}
 
 	public void dropTable(Connection connection) throws SQLException {
-		String sql = null;
-		Statement statement = null;
+		String sql = "drop table " + tablename + ";";
+		Statement statement = connection.createStatement();
+		statement.execute(sql);
+		statement.close();
 
 		for (Entry<String, Field> entry : oneToMany.entrySet()) {
 			if (!exists(connection, entry.getKey()))
@@ -264,11 +212,6 @@ class ClassMapper<A extends ActiveRecord> {
 			statement.execute(sql);
 			statement.close();
 		}
-
-		sql = "drop table " + tablename + ";";
-		statement = connection.createStatement();
-		statement.execute(sql);
-		statement.close();
 	}
 
 	public void save(Connection connection, A record) throws SQLException {
@@ -325,6 +268,7 @@ class ClassMapper<A extends ActiveRecord> {
 					classMapper.save(connection, a);
 				}
 
+				System.out.println(mappedClass.getSimpleName() + "." + f.getName() + " contains " + a);
 				if (!first)
 					sqlStatement.append(", ");
 				sqlStatement.append("(");
@@ -336,12 +280,12 @@ class ClassMapper<A extends ActiveRecord> {
 			}
 			sqlStatement.append(";");
 			Statement insertStatement = connection.createStatement();
+			System.out.println(sqlStatement);
 			insertStatement.execute(sqlStatement.toString());
 		}
 	}
 
 	/**
-	 * TODO Persist objects in sets (one to many relations)
 	 * 
 	 * @param connection
 	 * @param record
@@ -368,12 +312,12 @@ class ClassMapper<A extends ActiveRecord> {
 			} catch (IllegalAccessException e) {
 				throw new IllegalStateException(e);
 			}
-
 			values.add(TypeMapper.postgresify(value));
 		}
 
 		Statement statement = connection.createStatement();
 		String sql = "insert into " + tablename + "(" + Joiner.on(", ").join(columns) + ") values (" + Joiner.on(", ").join(values) + ") returning id;";
+		System.out.println(sql);
 
 		ResultSet result = statement.executeQuery(sql);
 
@@ -388,7 +332,6 @@ class ClassMapper<A extends ActiveRecord> {
 	}
 
 	/**
-	 * TODO Persist objects in sets (one to many relations)
 	 * 
 	 * @param connection
 	 * @param record
@@ -443,7 +386,7 @@ class ClassMapper<A extends ActiveRecord> {
 
 		ResultSet resultSet = statement.executeQuery(sql);
 
-		List<A> results = fromResultSet(resultSet);
+		List<A> results = fromResultSet(connection, resultSet);
 
 		if (results.size() == 1)
 			return results.get(0);
@@ -469,13 +412,12 @@ class ClassMapper<A extends ActiveRecord> {
 	}
 
 	/**
-	 * TODO Load objects in sets (one to many relations)
 	 * 
 	 * @param resultSet
 	 * @return
 	 * @throws SQLException
 	 */
-	private List<A> fromResultSet(ResultSet resultSet) throws SQLException {
+	private List<A> fromResultSet(Connection connection, ResultSet resultSet) throws SQLException {
 		List<A> results = new ArrayList<A>();
 
 		List<String> columnNames = Lists.newArrayList(columnMap.keySet());
@@ -495,8 +437,13 @@ class ClassMapper<A extends ActiveRecord> {
 					if (type.isEnum()) {
 						assignEnumToField(record, type, fields.get(i), (String)v);
 					} else if (ActiveRecord.class.isAssignableFrom(type)) {
-						// Handle one-to-one relation ships
+						// handle one-to-one relationships
+						long id = resultSet.getLong(columnNames.get(i));
+						ClassMapper<? extends ActiveRecord> classMapper = mapper.getClassMapperForClass((Class<? extends ActiveRecord>)type);
+						ActiveRecord activeRecord = classMapper.findById(connection, id);
+						fields.get(i).set(record, activeRecord);
 					} else {
+						// handle primitive fields
 						fields.get(i).set(record, resultSet.getObject(columnNames.get(i)));
 					}
 				}
@@ -599,7 +546,7 @@ class ClassMapper<A extends ActiveRecord> {
 
 		ResultSet resultSet = statement.executeQuery(sqlStatement.toString());
 
-		return fromResultSet(resultSet);
+		return fromResultSet(connection, resultSet);
 	}
 
 	private static String javaToUnderscore(String string) {
@@ -655,8 +602,10 @@ class ClassMapper<A extends ActiveRecord> {
 		sqlStatement.append(ownerId);
 		sqlStatement.append(";");
 
+		System.out.println(sqlStatement.toString());
+
 		Statement statement = connection.createStatement();
 		ResultSet resultSet = statement.executeQuery(sqlStatement.toString());
-		return new HashSet<A>(fromResultSet(resultSet));
+		return new HashSet<A>(fromResultSet(connection, resultSet));
 	}
 }
