@@ -1,6 +1,7 @@
 package dbs_fussball.test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,12 +33,13 @@ public class ActiveRecordMapperTest {
 	@Before
 	public void setUp() throws Exception {
 		classes = new ArrayList<Class<? extends ActiveRecord>>();
-		classes.add(Cup.class);
+
+		classes.add(Stadium.class);
+		classes.add(Person.class);
+		classes.add(Team.class);
 		classes.add(Event.class);
 		classes.add(Match.class);
-		classes.add(Person.class);
-		classes.add(Stadium.class);
-		classes.add(Team.class);
+		classes.add(Cup.class);
 
 		arm = new ActiveRecordMapper("dbs_fussball", "postgres", "vuvuzela", "test");
 		for (Class<? extends ActiveRecord> activeRecord : classes)
@@ -46,6 +48,7 @@ public class ActiveRecordMapperTest {
 
 	@After
 	public void tearDown() throws Exception {
+		Collections.reverse(classes);
 		for (Class<? extends ActiveRecord> activeRecord : classes)
 			arm.dropTable(activeRecord);
 	}
@@ -176,6 +179,23 @@ public class ActiveRecordMapperTest {
 		Set<Person> otherPlayers = Sets.newHashSet(anderesTeam.players());
 
 		Assert.assertEquals(supposedPlayers, otherPlayers);
-
 	}
+
+	@Test
+	public void testForeignKeyDeletion() throws Exception {
+		Person poldi = new Person("Lukas", "Podolski");
+		Team koeln = new Team();
+
+		koeln.addPlayer(poldi);
+
+		arm.save(poldi);
+		arm.save(koeln);
+
+		arm.delete(poldi);
+
+		koeln = arm.findBy(Team.class, koeln.getId());
+
+		Assert.assertFalse(koeln.containsPlayer(poldi));
+	}
+
 }
