@@ -201,6 +201,29 @@ class ClassMapper<A extends ActiveRecord> {
 			insert(connection, record);
 		else
 			update(connection, record);
+		
+		// handle one-to-one relations: if the active record has not saved
+		// before, save it
+		
+		for (Entry<String, Field> entry : columnMap.entrySet()) {
+			Field field = entry.getValue();
+			Object value;
+			try {
+				value = field.get(record);
+			} catch (IllegalAccessException e) {
+				throw new IllegalStateException(e);
+			}
+			if (value != null) {
+				if (ActiveRecord.class.isAssignableFrom(value.getClass())) {
+					if (((ActiveRecord) value).getId() == null) {
+						ClassMapper classMapper = mapper
+								.getClassMapperForClass(((ActiveRecord) value)
+										.getClass());
+						classMapper.save(connection, ((ActiveRecord) value));
+					}
+				}
+			}
+		}
 
 		// handle one-to-many relations
 
@@ -558,20 +581,6 @@ class ClassMapper<A extends ActiveRecord> {
 				throw new IllegalStateException(e);
 			}
 
-			// handle one-to-one relations: if the active record has not saved
-			// before, save it
-
-			if (value != null) {
-				if (ActiveRecord.class.isAssignableFrom(value.getClass())) {
-					if (((ActiveRecord) value).getId() == null) {
-						ClassMapper classMapper = mapper
-								.getClassMapperForClass(((ActiveRecord) value)
-										.getClass());
-						classMapper.save(connection, ((ActiveRecord) value));
-					}
-				}
-			}
-
 			values.add(TypeMapper.postgresify(value));
 		}
 
@@ -618,20 +627,6 @@ class ClassMapper<A extends ActiveRecord> {
 				value = field.get(record);
 			} catch (IllegalAccessException e) {
 				throw new IllegalStateException(e);
-			}
-
-			// handle one-to-one relations: if the active record has not saved
-			// before, save it
-
-			if (value != null) {
-				if (ActiveRecord.class.isAssignableFrom(value.getClass())) {
-					if (((ActiveRecord) value).getId() == null) {
-						ClassMapper classMapper = mapper
-								.getClassMapperForClass(((ActiveRecord) value)
-										.getClass());
-						classMapper.save(connection, ((ActiveRecord) value));
-					}
-				}
 			}
 
 			columnsAndValues.put(entry.getKey(), TypeMapper.postgresify(value));
