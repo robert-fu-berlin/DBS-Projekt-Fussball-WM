@@ -17,20 +17,24 @@ import com.google.common.collect.Iterators;
  * @author Robert B�hnke
  */
 public class Team extends ActiveRecord {
-	private final Set<Person>	associates;
-	private FifaCountry	nation;
-	private final Set<Person>	players;
+	private Set<Person>	associates;
+	private FifaCountry	country;
+	private Set<Person>	players;
 	private Person		trainer, assitantTrainer, doctor;
 
 	/**
-	 * Public constructor for reflection. Use Event�s static methods obtain
-	 * instances of this class.
+	 * Public constructor for reflection. Should <b>not</b> be called.
 	 * TODO find a way to reduce the visibility of this constructor without
 	 * messing up the ActiveRecordMapper
 	 */
 	public Team() {
-		players = new HashSet();
+
+	}
+
+	public Team(FifaCountry country) {
+		players = new HashSet<Person>();
 		associates = new HashSet<Person>();
+		this.country = country;
 	}
 
 	public boolean addAssociate(Person associate) {
@@ -91,7 +95,7 @@ public class Team extends ActiveRecord {
 	}
 
 	public FifaCountry getNation() {
-		return nation;
+		return country;
 	}
 
 	public Person getTrainer() {
@@ -107,7 +111,7 @@ public class Team extends ActiveRecord {
 	}
 
 	public void setNation(FifaCountry nation) {
-		this.nation = nation;
+		this.country = nation;
 	}
 
 	public void setTrainer(Person trainer) {

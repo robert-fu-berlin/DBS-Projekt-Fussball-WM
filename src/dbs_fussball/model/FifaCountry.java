@@ -1,10 +1,14 @@
 package dbs_fussball.model;
 
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
@@ -1283,6 +1287,19 @@ public enum FifaCountry {
 		successors.put(TANGANYIKA, TANZANIA);
 	}
 
+	private static Map<String, FifaCountry>						codesToCountries;
+
+	static {
+		codesToCountries = new HashMap<String, FifaCountry>(FifaCountry.values().length);
+		for (FifaCountry country : FifaCountry.values()) {
+			codesToCountries.put(country.code, country);
+		}
+	}
+
+	public static FifaCountry countryForCode(String code) {
+		return codesToCountries.get(code);
+	}
+
 	public final String code;
 
 	FifaCountry(String code) {
@@ -1297,6 +1314,18 @@ public enum FifaCountry {
 			result.addAll(successors.get(iterator.next()));
 		}
 		return EnumSet.copyOf(result);
+	}
+
+	@Override
+	public String toString() {
+		Pattern p = Pattern.compile("(^|\\W)([a-z])");
+		Matcher m = p.matcher(this.name().toLowerCase().replace('_', ' '));
+		StringBuffer sb = new StringBuffer(this.name().length());
+		while (m.find()) {
+			m.appendReplacement(sb, m.group(1) + m.group(2).toUpperCase());
+		}
+		m.appendTail(sb);
+		return sb.toString();
 	}
 
 }

@@ -22,8 +22,7 @@ public class Person extends ActiveRecord {
 	private Set<Team> playedTeams;
 
 	/**
-	 * Public constructor for reflection. Use Event�s static methods obtain
-	 * instances of this class.
+	 * Public constructor for reflection.
 	 * TODO find a way to reduce the visibility of this constructor without
 	 * messing up the ActiveRecordMapper
 	 */
@@ -32,14 +31,14 @@ public class Person extends ActiveRecord {
 	}
 
 	public Person(String firstName, String lastName) {
+		this();
 		this.firstName = firstName;
 		this.lastName = lastName;
-		this.playedTeams = new HashSet<Team>();
 	}
 
 	public Person(String stageName) {
+		this();
 		this.stageName = stageName;
-		this.playedTeams = new HashSet<Team>();
 	}
 
 	@Override
@@ -53,13 +52,6 @@ public class Person extends ActiveRecord {
 			return false;
 
 		return this.id.equals(other.id);
-	}
-
-	@Override
-	public int hashCode() {
-		if (id == null)
-			return 0;
-		return id.hashCode();
 	}
 
 	/**
@@ -76,7 +68,7 @@ public class Person extends ActiveRecord {
 		}
 
 		if (stageName != null) {
-			names[1] = "�"+ stageName + "�";
+			names[1] = stageName;
 		}
 
 		if (lastName != null) {
@@ -147,28 +139,33 @@ public class Person extends ActiveRecord {
 	 * @param playedTeam
 	 */
 	void createInversePlayed(Team playedTeam) {
-		if (playedTeams == null)
+		if (playedTeams == null) {
 			playedTeams = new HashSet<Team>();
+		}
 		this.playedTeams.add(playedTeam);
 	}
 
 	@Override
 	public List<ValidationFailure> validate() {
 		List<ValidationFailure> failureList = new ArrayList<ValidationFailure>();
-		if ((firstName == null || lastName == null) && stageName == null)
+		if ((firstName == null || lastName == null) && stageName == null) {
 			failureList.add(new ValidationFailure("A person must have either first and last or stage name"));
-		if (weight != null && (weight < 0 || weight == Float.NaN || weight == Float.POSITIVE_INFINITY))
+		}
+		if (weight != null && (weight < 0 || weight == Float.NaN || weight == Float.POSITIVE_INFINITY)) {
 			failureList.add(new ValidationFailure("Weight must be positive, but not infinit"));
-		if (height != null && (height < 0 || height == Float.NaN || height == Float.POSITIVE_INFINITY))
+		}
+		if (height != null && (height < 0 || height == Float.NaN || height == Float.POSITIVE_INFINITY)) {
 			failureList.add(new ValidationFailure("Height must be positive, but not infinit"));
+		}
 		return failureList;
 	}
 
 	@Override
 	public List<ValidationFailure> validateAssociated() {
 		List<ValidationFailure> failureList = validate();
-		for (Team t : playedTeams)
+		for (Team t : playedTeams) {
 			failureList.addAll(t.validate());
+		}
 		return failureList;
 	}
 }
