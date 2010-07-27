@@ -1,6 +1,10 @@
 package dbs_fussball.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import active_record.ActiveRecord;
+import active_record.Inverse;
 
 public class Event extends ActiveRecord {
 	public enum Type {
@@ -196,4 +200,5 @@ public class Event extends ActiveRecord {
 	public void setAnnotation(String annotation) {
 		this.annotation = annotation;
 	}
+	
 }

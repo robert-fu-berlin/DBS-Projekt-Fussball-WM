@@ -20,6 +20,25 @@ public class Person extends ActiveRecord {
 
 	@Inverse("dbs_fussball.model.Team.players")
 	private Set<Team> playedTeams;
+	@Inverse("dbs_fussball.model.Team.trainer")
+	private Set<Team> trainedTeams;
+	@Inverse("dbs_fussball.model.Team.assistenTrainer")
+	private Set<Team> assistentTrainedTeams;
+	@Inverse("dbs_fussball.model.Team.doctor")
+	private Set<Team> treatedTeams;
+	@Inverse("dbs_fussball.model.Team.associates")
+	private Set<Team> associatedTeams;
+	
+	@Inverse("dbs_fussball.model.Match.startingLineUpTeamA")
+	private Set<Match> linedUpForTeamAMatches;
+	@Inverse("dbs_fussball.model.Match.startingLineUpTeamB")
+	private Set<Match> linedUpForTeamBMatches;
+	
+	@Inverse("dbs_fussball.model.Event.primaryPerson")
+	private Set<Event> isPrimaryPersonEvents;
+	@Inverse("dbs_fussball.model.Event.secondaryPerson")
+	private Set<Event> isSecondaryPersonEvents;
+
 
 	/**
 	 * Public constructor for reflection.
@@ -143,6 +162,86 @@ public class Person extends ActiveRecord {
 			playedTeams = new HashSet<Team>();
 		}
 		this.playedTeams.add(playedTeam);
+	}
+	
+	/**
+	 * Adds a team in which this person is the doctor
+	 * @param treatedTeam
+	 */
+	void createInverseDoctor(Team treatedTeam) {
+		if (treatedTeams == null)
+			treatedTeams = new HashSet<Team>();
+		this.treatedTeams.add(treatedTeam);
+	}
+	
+	/**
+	 * Adds a team in which this person is the trainer
+	 * @param trainedTeam
+	 */
+	void createInverseTrained(Team trainedTeam) {
+		if (trainedTeams == null)
+			trainedTeams = new HashSet<Team>();
+		this.trainedTeams.add(trainedTeam);
+	}
+	
+	/**
+	 * Adds a team in which this person is the assisten trainer
+	 * @param treatedTeam
+	 */
+	void createInverseAssistentTrained(Team assistentTrainedTeam) {
+		if (assistentTrainedTeams == null)
+			assistentTrainedTeams = new HashSet<Team>();
+		this.assistentTrainedTeams.add(assistentTrainedTeam);
+	}
+	
+	/**
+	 * Adds a team in which this person is a associate
+	 * @param associatedTeam
+	 */
+	void createInverseAssosiated(Team assosiatedTeam) {
+		if (associatedTeams == null)
+			associatedTeams = new HashSet<Team>();
+		this.associatedTeams.add(assosiatedTeam);
+	}
+	
+	/**
+	 * Adds a match in which this person is lined up for team A
+	 * @param match
+	 */
+	void createInverseLinedUpForTeamA (Match match) {
+		if (linedUpForTeamAMatches == null)
+			linedUpForTeamAMatches = new HashSet<Match>();
+		this.linedUpForTeamAMatches.add(match);
+	}
+	
+	/**
+	 * Adds a match in which this person is lined up for team B
+	 * @param match
+	 */
+	void createInverseLinedUpForTeamB (Match match) {
+		if (linedUpForTeamBMatches == null)
+			linedUpForTeamBMatches = new HashSet<Match>();
+		this.linedUpForTeamBMatches.add(match);
+	}
+	
+	/**
+	 * Adds an event in which this person is the primary person
+	 * @param match
+	 */
+	void createInversePrimaryPerson (Event event) {
+		if (isPrimaryPersonEvents == null)
+			isPrimaryPersonEvents = new HashSet<Event>();
+		this.isPrimaryPersonEvents.add(event);
+	}
+	
+	/**
+	 * Adds an event in which this person is the secondary person
+	 * @param match
+	 */
+	void createInverseSecondaryPerson (Event event) {
+		if (isSecondaryPersonEvents == null)
+			isSecondaryPersonEvents = new HashSet<Event>();
+		this.isSecondaryPersonEvents.add(event);
 	}
 
 	@Override

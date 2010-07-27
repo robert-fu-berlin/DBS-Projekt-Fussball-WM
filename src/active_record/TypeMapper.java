@@ -78,8 +78,12 @@ class TypeMapper {
 		if (value.getClass().isEnum())
 			return '\'' + ((Enum)value).name() + '\'';
 
-		if (ActiveRecord.class.isAssignableFrom(value.getClass()))
-			return ((ActiveRecord) value).getId().toString();
+		if (ActiveRecord.class.isAssignableFrom(value.getClass())){
+			if (((ActiveRecord) value).getId() == null)
+				return "null";
+			else return ((ActiveRecord) value).getId().toString();
+		}
+			
 
 		if (postgresForJava(value.getClass()) == null)
 			throw new IllegalArgumentException("Cannot map objects of type " + value.getClass());

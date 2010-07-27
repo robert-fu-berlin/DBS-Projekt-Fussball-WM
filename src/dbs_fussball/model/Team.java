@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import active_record.ActiveRecord;
+import active_record.Inverse;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -21,6 +22,11 @@ public class Team extends ActiveRecord {
 	private FifaCountry	country;
 	private Set<Person>	players;
 	private Person		trainer, assitantTrainer, doctor;
+	
+	@Inverse("dbs_fussball.model.Match.teamA")
+	private Set<Match> isTeamAMatches;
+	@Inverse("dbs_fussball.model.Match.teamB")
+	private Set<Match> isTeamBMatches;
 
 	/**
 	 * Public constructor for reflection. Should <b>not</b> be called.
@@ -38,10 +44,15 @@ public class Team extends ActiveRecord {
 	}
 
 	public boolean addAssociate(Person associate) {
+		associate.createInverseAssosiated(this);
 		return associates.add(associate);
 	}
 
 	public boolean addAssociate(Person associate, Person... moreAssociates) {
+		associate.createInverseAssosiated(this);
+		for (Person person : moreAssociates) {
+			person.createInverseAssosiated(this);
+		}
 		return associates.add(associate) | Collections.addAll(associates, moreAssociates);
 	}
 
@@ -61,13 +72,17 @@ public class Team extends ActiveRecord {
 		return Iterators.unmodifiableIterator(associates.iterator());
 	}
 
-	public boolean addPlayer(Person associate) {
-		associate.createInversePlayed(this);
-		return players.add(associate);
+	public boolean addPlayer(Person player) {
+		player.createInversePlayed(this);
+		return players.add(player);
 	}
 
-	public boolean addPlayer(Person associate, Person... moreAssociates) {
-		return players.add(associate) | Collections.addAll(players, moreAssociates);
+	public boolean addPlayer(Person player, Person... morePlayers) {
+		player.createInversePlayed(this);
+		for (Person person : morePlayers) {
+			person.createInversePlayed(this);
+		}
+		return players.add(player) | Collections.addAll(players, morePlayers);
 	}
 
 	public boolean containsPlayer(Person associate) {
@@ -104,10 +119,12 @@ public class Team extends ActiveRecord {
 
 	public void setAssitantTrainer(Person assitantTrainer) {
 		this.assitantTrainer = assitantTrainer;
+		assitantTrainer.createInverseAssistentTrained(this);
 	}
 
 	public void setDoctor(Person doctor) {
 		this.doctor = doctor;
+		doctor.createInverseDoctor(this);
 	}
 
 	public void setNation(FifaCountry nation) {
@@ -116,6 +133,25 @@ public class Team extends ActiveRecord {
 
 	public void setTrainer(Person trainer) {
 		this.trainer = trainer;
+		trainer.createInverseTrained(this);
+	}
+	/**
+	 * Adds a match in which this team is team A
+	 * @param match
+	 */
+	void createInverseLinedUpForTeamA (Match match) {
+		if (isTeamAMatches == null)
+			isTeamAMatches = new HashSet<Match>();
+		this.isTeamAMatches.add(match);
+	}
+	/**
+	 * Adds a match in which this team is team B
+	 * @param match
+	 */
+	void createInverseLinedUpForTeamB (Match match) {
+		if (isTeamBMatches == null)
+			isTeamBMatches = new HashSet<Match>();
+		this.isTeamBMatches.add(match);
 	}
 
 	@Override
