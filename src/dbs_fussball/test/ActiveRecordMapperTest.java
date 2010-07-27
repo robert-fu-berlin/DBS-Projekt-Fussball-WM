@@ -23,6 +23,8 @@ import dbs_fussball.model.Match;
 import dbs_fussball.model.Person;
 import dbs_fussball.model.Stadium;
 import dbs_fussball.model.Team;
+import dbs_fussball.model.User;
+import dbs_fussball.model.Usergroup;
 
 public class ActiveRecordMapperTest {
 
@@ -40,6 +42,8 @@ public class ActiveRecordMapperTest {
 		classes.add(Event.class);
 		classes.add(Match.class);
 		classes.add(Cup.class);
+		classes.add(User.class);
+		classes.add(Usergroup.class);
 
 		arm = new ActiveRecordMapper("dbs_fussball", "postgres", "vuvuzela", "test");
 		for (Class<? extends ActiveRecord> activeRecord : classes)
@@ -188,7 +192,7 @@ public class ActiveRecordMapperTest {
 
 		koeln.addPlayer(poldi);
 
-		arm.save(poldi);
+		//		arm.save(poldi);
 		arm.save(koeln);
 
 		arm.delete(poldi);
@@ -197,5 +201,5 @@ public class ActiveRecordMapperTest {
 
 		Assert.assertFalse(koeln.containsPlayer(poldi));
 	}
-
 }
+
