@@ -23,7 +23,6 @@ public class LazySet<T extends ActiveRecord> implements Set<T> {
 		this.classMapper = classMapper;
 	}
 
-
 	private void populateBuffer() {
 		if (buffer != null)
 			return;
@@ -35,14 +34,39 @@ public class LazySet<T extends ActiveRecord> implements Set<T> {
 			//TODO think about that
 			e.printStackTrace();
 		} finally {
-			if (connection != null)
+			if (connection != null) {
 				try {
 					connection.close();
 				} catch (SQLException e) {
 					System.err.println(e.getLocalizedMessage());
 				}
+			}
 		}
 
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Set<?>))
+			return false;
+
+		Set<?> other = (Set<?>) obj;
+
+		populateBuffer();
+
+		if (this.size() != other.size())
+			return false;
+
+		for (T t : buffer)
+			if (!other.contains(t))
+				return false;
+
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		return tableName.hashCode() ^ ownerId.hashCode();
 	}
 
 	@Override

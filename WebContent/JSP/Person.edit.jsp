@@ -6,14 +6,7 @@
 	pageEncoding="ISO-8859-1"%>
 <% Person currentPerson = (Person) request.getAttribute("person"); %>
 <% NumberFormat nf = NumberFormat.getInstance(Locale.GERMAN); %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>DBS Projekt - <%= currentPerson.getDisplayName()  %></title>
-</head>
-<body>
-<div>
+<jsp:include page="Templates/Header.jsp" />
 <h1><%= currentPerson.getDisplayName() %></h1>
 <form method="post">
 <table>
@@ -56,6 +49,4 @@
 </table>
 <input type="submit" value="Ändern" /></form>
 <form action="<%= this.getServletContext().getContextPath() + "/person/" + currentPerson.getId() + "/delete" %>" method="post"><input type="submit" value="Löschen" /></form>
-</div>
-</body>
-</html>
+<jsp:include page="Templates/Footer.jsp" />

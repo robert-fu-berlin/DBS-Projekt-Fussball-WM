@@ -6,9 +6,9 @@ import java.util.List;
 
 public abstract class ActiveRecord {
 
-	protected Long id = null;
-	protected Long createdAt = System.currentTimeMillis();
-	protected Long updatedAt = new Long(createdAt);
+	protected Long	id			= null;
+	protected Long	createdAt	= System.currentTimeMillis();
+	protected Long	updatedAt	= new Long(createdAt);
 
 	public Long getId() {
 		return id;

@@ -11,26 +11,33 @@ import active_record.ValidationFailure;
 
 public class User extends ActiveRecord {
 
-	private final String email;
-	private final String password;
-	private final Boolean isAdmin;
+	private String			email;
+	private String			passwordHash;
+	private Boolean			isAdmin;
 
-	private final Set<Match> permissions;
+	private Set<Match>		permissions;
 
-	@Inverse("dbs_fussball.model.Usergroup.users")
-	private final Set<Usergroup> usergroups;
+	@Inverse("dbs_fussball.model.Usergroup.user")
+	private Set<Usergroup>	usergroups;
 
-	public User(String email, String password) {
+	/**
+	 * Default constructor used for reflection. You should not call this.
+	 */
+	public User() {
+
+	}
+
+	public User(String email, String passwordHash) {
 		this.email = email;
-		this.password = password;
+		this.passwordHash = passwordHash;
 		this.isAdmin = false;
 		permissions = new HashSet<Match>();
 		usergroups = new HashSet<Usergroup>();
 	}
 
-	public User(String email, String password, boolean isAdmin) {
+	public User(String email, String passwordHash, boolean isAdmin) {
 		this.email = email;
-		this.password = password;
+		this.passwordHash = passwordHash;
 		this.isAdmin = isAdmin;
 		permissions = new HashSet<Match>();
 		usergroups = new HashSet<Usergroup>();
@@ -52,8 +59,8 @@ public class User extends ActiveRecord {
 		return email;
 	}
 
-	public String getPassword() {
-		return password;
+	public String getPasswordHash() {
+		return passwordHash;
 	}
 
 	public Boolean getIsAdmin() {
@@ -75,12 +82,15 @@ public class User extends ActiveRecord {
 	@Override
 	public List<ValidationFailure> validate() {
 		List<ValidationFailure> failures = new ArrayList<ValidationFailure>();
-		if (email == null)
+		if (email == null) {
 			failures.add(new ValidationFailure("User must have an email"));
-		if (!email.matches("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"))
+		}
+		if (!email.matches("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")) {
 			failures.add(new ValidationFailure("Email must have valid format"));
-		if (password == null)
-			failures.add(new ValidationFailure("User must have a password"));
+		}
+		if (passwordHash == null || passwordHash.length() != 32) {
+			failures.add(new ValidationFailure("User must have a 32 character long md5 password hash"));
+		}
 		return failures;
 	}
 }
