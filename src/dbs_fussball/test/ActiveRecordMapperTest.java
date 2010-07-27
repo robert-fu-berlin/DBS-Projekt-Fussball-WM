@@ -19,6 +19,7 @@ import com.google.common.collect.Sets;
 
 import dbs_fussball.model.Cup;
 import dbs_fussball.model.Event;
+import dbs_fussball.model.FifaCountry;
 import dbs_fussball.model.Match;
 import dbs_fussball.model.Person;
 import dbs_fussball.model.Stadium;
@@ -38,14 +39,18 @@ public class ActiveRecordMapperTest {
 
 		classes.add(Stadium.class);
 		classes.add(Person.class);
-		classes.add(Team.class);
 		classes.add(Event.class);
-		classes.add(Match.class);
+		classes.add(Team.class);
 		classes.add(Cup.class);
 		classes.add(User.class);
 		classes.add(Usergroup.class);
+		classes.add(Match.class);
 
 		arm = new ActiveRecordMapper("dbs_fussball", "postgres", "vuvuzela", "test");
+
+		arm.createTable(Person.class);
+		arm.dropTable(Person.class);
+
 		for (Class<? extends ActiveRecord> activeRecord : classes)
 			arm.createTable(activeRecord);
 	}
@@ -158,7 +163,7 @@ public class ActiveRecordMapperTest {
 
 	@Test
 	public void testLazySet() throws Exception {
-		Team team = new Team();
+		Team team = new Team(FifaCountry.AFGHANISTAN);
 		Set<Person> supposedPlayers = new HashSet<Person>();
 
 		Person poldi = new Person("Lukas", "Podolski");
@@ -188,7 +193,7 @@ public class ActiveRecordMapperTest {
 	@Test
 	public void testForeignKeyDeletion() throws Exception {
 		Person poldi = new Person("Lukas", "Podolski");
-		Team koeln = new Team();
+		Team koeln = new Team(FifaCountry.ALBANIA);
 
 		koeln.addPlayer(poldi);
 

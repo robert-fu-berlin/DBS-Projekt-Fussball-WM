@@ -102,6 +102,7 @@ public class ActiveRecordMapper {
 
 	Connection obtainConnection() throws SQLException {
 		Connection newConnection = DriverManager.getConnection(url, user, password);
+		newConnection.setAutoCommit(false);
 		return newConnection;
 	}
 
@@ -125,6 +126,26 @@ public class ActiveRecordMapper {
 		ClassMapper<A> mapper = (ClassMapper<A>) classMapper.get(activeRecord);
 
 		mapper.createTable(connection);
+
+		try {
+			connection.commit();
+		} catch (SQLException e) {
+			connection.rollback();
+		} finally {
+			connection.close();
+		}
+	}
+
+	public void createTable(Class<? extends ActiveRecord> ... activeRecords) throws SQLException {
+
+		Connection connection = obtainConnection();
+
+		for (Class<? extends ActiveRecord> a : activeRecords) {
+			register(a);
+			ClassMapper<? extends ActiveRecord> mapper = classMapper.get(a);
+
+			mapper.createTable(connection);
+		}
 
 		connection.commit();
 		connection.close();

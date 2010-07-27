@@ -39,7 +39,7 @@ public class Usergroup extends ActiveRecord{
 	public boolean addUser(User u) {
 		return users.add(u);
 	}
-
+	
 	@Override
 	public List<ValidationFailure> validate() {
 		List<ValidationFailure> failures = new ArrayList<ValidationFailure>();

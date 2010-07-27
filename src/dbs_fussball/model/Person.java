@@ -168,4 +168,10 @@ public class Person extends ActiveRecord {
 		}
 		return failureList;
 	}
+
+	@Override
+	public String toString() {
+		return (firstName == null ? "" : firstName + " ") + (stageName == null ? "" : stageName + " ") + (lastName == null ? "" : lastName);
+	}
+
 }

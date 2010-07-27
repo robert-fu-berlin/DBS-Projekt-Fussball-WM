@@ -30,6 +30,11 @@ public abstract class ActiveRecord {
 		return new Date(updatedAt);
 	}
 
+	@Override
+	public int hashCode() {
+		return createdAt.hashCode();
+	}
+
 	/**
 	 * ActiveRecord is considered valid if an empty list is returned
 	 */
