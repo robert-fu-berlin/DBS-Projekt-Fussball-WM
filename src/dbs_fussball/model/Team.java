@@ -114,13 +114,13 @@ public class Team extends ActiveRecord {
 	}
 
 	public void setAssitantTrainer(Person assitantTrainer) {
-		assitantTrainer.createInverseAssistentTrained(this);
 		this.assitantTrainer = assitantTrainer;
+		assitantTrainer.createInverseAssistentTrained(this);
 	}
 
 	public void setDoctor(Person doctor) {
-		assitantTrainer.createInverseDoctor(this);
 		this.doctor = doctor;
+		doctor.createInverseDoctor(this);
 	}
 
 	public void setNation(FifaCountry nation) {
@@ -128,8 +128,8 @@ public class Team extends ActiveRecord {
 	}
 
 	public void setTrainer(Person trainer) {
-		trainer.createInverseTrained(this);
 		this.trainer = trainer;
+		trainer.createInverseTrained(this);
 	}
 	/**
 	 * Adds a match in which this team is team A

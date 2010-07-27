@@ -1,5 +1,6 @@
 package dbs_fussball.test;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -42,8 +43,9 @@ public class ActiveRecordMapperTest {
 		classes.add(Cup.class);
 
 		arm = new ActiveRecordMapper("dbs_fussball", "postgres", "vuvuzela", "test");
-		for (Class<? extends ActiveRecord> activeRecord : classes)
+		for (Class<? extends ActiveRecord> activeRecord : classes){
 			arm.createTable(activeRecord);
+		}
 	}
 
 	@After
@@ -187,8 +189,6 @@ public class ActiveRecordMapperTest {
 		Team koeln = new Team();
 
 		koeln.addPlayer(poldi);
-
-		arm.save(poldi);
 		arm.save(koeln);
 
 		arm.delete(poldi);
@@ -196,6 +196,29 @@ public class ActiveRecordMapperTest {
 		koeln = arm.findBy(Team.class, koeln.getId());
 
 		Assert.assertFalse(koeln.containsPlayer(poldi));
+	}
+	@Test
+	public void testInverse() throws Exception {
+		Person heinrich = new Person("Heinrich", "Meier");
+		Team koeln = new Team();
+		Team usa = new Team();
+		
+		Field field = Person.class.getDeclaredField("treatedTeams");
+		field.setAccessible(true);
+
+		Set set = (Set) field.get(heinrich);
+		
+		Assert.assertEquals(null, set);
+
+		koeln.setDoctor(heinrich);
+		usa.setDoctor(heinrich);
+		arm.save(koeln);
+		arm.save(usa);
+
+		set = (Set) field.get(heinrich);
+
+		Assert.assertNotNull(set);
+		Assert.assertEquals(2, set.size());
 	}
 
 }
