@@ -206,12 +206,12 @@ public class ActiveRecordMapperTest {
 		Person heinrich = new Person("Heinrich", "Meier");
 		Team koeln = new Team();
 		Team usa = new Team();
-		
+
 		Field field = Person.class.getDeclaredField("treatedTeams");
 		field.setAccessible(true);
 
 		Set set = (Set) field.get(heinrich);
-		
+
 		Assert.assertEquals(null, set);
 
 		koeln.setDoctor(heinrich);
@@ -223,6 +223,21 @@ public class ActiveRecordMapperTest {
 
 		Assert.assertNotNull(set);
 		Assert.assertEquals(2, set.size());
+	}
+
+	@Test
+	public void testCircularOneToOne() throws Exception {
+		Cup.CupBuilder builder = new Cup.CupBuilder();
+		for (int i = 0; i< 32 ; i++)
+		{
+			builder.addCountryToGroup(FifaCountry.values()[i], (char)('a' + i%8));
+		}
+		Cup wm = builder.build();
+		arm.save(wm);
+
+		Cup mayBeWm = arm.findBy(Cup.class, wm.getId());
+
+		Assert.assertEquals(mayBeWm.getId(), wm.getId());
 	}
 
 }

@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 import active_record.ActiveRecord;
-import active_record.Inverse;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -21,11 +20,10 @@ public class Team extends ActiveRecord {
 	private Set<Person>	associates;
 	private FifaCountry	country;
 	private Set<Person>	players;
-	private Person		trainer, assitantTrainer, doctor;
-	
-	@Inverse("dbs_fussball.model.Match.teamA")
+	private Person		trainer, assistantTrainer, doctor;
+
 	private Set<Match> isTeamAMatches;
-	@Inverse("dbs_fussball.model.Match.teamB")
+
 	private Set<Match> isTeamBMatches;
 
 	/**
@@ -44,14 +42,14 @@ public class Team extends ActiveRecord {
 	}
 
 	public boolean addAssociate(Person associate) {
-		associate.createInverseAssosiated(this);
+		associate.createInverseAssociated(this);
 		return associates.add(associate);
 	}
 
 	public boolean addAssociate(Person associate, Person... moreAssociates) {
-		associate.createInverseAssosiated(this);
+		associate.createInverseAssociated(this);
 		for (Person person : moreAssociates) {
-			person.createInverseAssosiated(this);
+			person.createInverseAssociated(this);
 		}
 		return associates.add(associate) | Collections.addAll(associates, moreAssociates);
 	}
@@ -102,7 +100,7 @@ public class Team extends ActiveRecord {
 	}
 
 	public Person getAssitantTrainer() {
-		return assitantTrainer;
+		return assistantTrainer;
 	}
 
 	public Person getDoctor() {
@@ -118,8 +116,8 @@ public class Team extends ActiveRecord {
 	}
 
 	public void setAssitantTrainer(Person assitantTrainer) {
-		this.assitantTrainer = assitantTrainer;
-		assitantTrainer.createInverseAssistentTrained(this);
+		this.assistantTrainer = assitantTrainer;
+		assitantTrainer.createInverseAssistantTrained(this);
 	}
 
 	public void setDoctor(Person doctor) {

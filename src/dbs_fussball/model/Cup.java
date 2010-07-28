@@ -15,10 +15,10 @@ public class Cup extends ActiveRecord {
 	private Match semiFinalMatch1, semiFinalMatch2;
 	private Match quarterFinalMatch1, quarterFinalMatch2, quarterFinalMatch3, quarterFinalMatch4;
 	private Match roundOfSixteenMatch1, roundOfSixteenMatch2, roundOfSixteenMatch3, roundOfSixteenMatch4,
-				  roundOfSixteenMatch5, roundOfSixteenMatch6, roundOfSixteenMatch7, roundOfSixteenMatch8;
+	roundOfSixteenMatch5, roundOfSixteenMatch6, roundOfSixteenMatch7, roundOfSixteenMatch8;
 
 	private Set<Match>	matchesGroupA, matchesGroupB, matchesGroupC, matchesGroupD, matchesGroupE, matchesGroupF,
-			matchesGroupG, matchesGroupH;
+	matchesGroupG, matchesGroupH;
 	private Set<Team>	teamGroupA, teamGroupB, teamGroupC, teamGroupD, teamGroupE, teamGroupF, teamGroupG, teamGroupH;
 	private Set<Team> teams;
 
@@ -47,48 +47,48 @@ public class Cup extends ActiveRecord {
 
 	public Match getQuarterFinal(int number) {
 		switch (number) {
-			case 1:
-				return quarterFinalMatch1;
-			case 2:
-				return quarterFinalMatch2;
-			case 3:
-				return quarterFinalMatch3;
-			case 4:
-				return quarterFinalMatch4;
-			default:
-				throw new IllegalArgumentException();
+		case 1:
+			return quarterFinalMatch1;
+		case 2:
+			return quarterFinalMatch2;
+		case 3:
+			return quarterFinalMatch3;
+		case 4:
+			return quarterFinalMatch4;
+		default:
+			throw new IllegalArgumentException();
 		}
 	}
 
 	public Match getRoundOfSixteen(int number) {
 		switch (number) {
-			case 1:
-				return roundOfSixteenMatch1;
-			case 2:
-				return roundOfSixteenMatch2;
-			case 3:
-				return roundOfSixteenMatch3;
-			case 4:
-				return roundOfSixteenMatch4;
-			case 5:
-				return roundOfSixteenMatch5;
-			case 6:
-				return roundOfSixteenMatch6;
-			case 7:
-				return roundOfSixteenMatch7;
-			case 8:
-				return roundOfSixteenMatch8;
-			default:
-				throw new IllegalArgumentException();
+		case 1:
+			return roundOfSixteenMatch1;
+		case 2:
+			return roundOfSixteenMatch2;
+		case 3:
+			return roundOfSixteenMatch3;
+		case 4:
+			return roundOfSixteenMatch4;
+		case 5:
+			return roundOfSixteenMatch5;
+		case 6:
+			return roundOfSixteenMatch6;
+		case 7:
+			return roundOfSixteenMatch7;
+		case 8:
+			return roundOfSixteenMatch8;
+		default:
+			throw new IllegalArgumentException();
 		}
 	}
 
 	public static class CupBuilder {
 
-		private List<Team>	teamGroupA	= new ArrayList<Team>(), teamGroupB = new ArrayList<Team>(),
-				teamGroupC = new ArrayList<Team>(), teamGroupD = new ArrayList<Team>(),
-				teamGroupE = new ArrayList<Team>(), teamGroupF = new ArrayList<Team>(),
-				teamGroupG = new ArrayList<Team>(), teamGroupH = new ArrayList<Team>();
+		private final List<Team>	teamGroupA	= new ArrayList<Team>(), teamGroupB = new ArrayList<Team>(),
+		teamGroupC = new ArrayList<Team>(), teamGroupD = new ArrayList<Team>(),
+		teamGroupE = new ArrayList<Team>(), teamGroupF = new ArrayList<Team>(),
+		teamGroupG = new ArrayList<Team>(), teamGroupH = new ArrayList<Team>();
 
 		public CupBuilder startDate(Date startDate) {
 			return this;
@@ -97,33 +97,33 @@ public class Cup extends ActiveRecord {
 		public CupBuilder addCountryToGroup(FifaCountry country, char group) {
 			group = Character.toUpperCase(group);
 			if (!(group >= 'A') && !(group <= 'H'))
-				throw new IllegalArgumentException("Group must be between A and G");
+				throw new IllegalArgumentException("Group must be between A and H");
 
 			switch (group) {
-				case 'A':
-					teamGroupA.add(new Team(country));
-					break;
-				case 'B':
-					teamGroupB.add(new Team(country));
-					break;
-				case 'C':
-					teamGroupC.add(new Team(country));
-					break;
-				case 'D':
-					teamGroupD.add(new Team(country));
-					break;
-				case 'E':
-					teamGroupE.add(new Team(country));
-					break;
-				case 'F':
-					teamGroupF.add(new Team(country));
-					break;
-				case 'G':
-					teamGroupG.add(new Team(country));
-					break;
-				case 'H':
-					teamGroupH.add(new Team(country));
-					break;
+			case 'A':
+				teamGroupA.add(new Team(country));
+				break;
+			case 'B':
+				teamGroupB.add(new Team(country));
+				break;
+			case 'C':
+				teamGroupC.add(new Team(country));
+				break;
+			case 'D':
+				teamGroupD.add(new Team(country));
+				break;
+			case 'E':
+				teamGroupE.add(new Team(country));
+				break;
+			case 'F':
+				teamGroupF.add(new Team(country));
+				break;
+			case 'G':
+				teamGroupG.add(new Team(country));
+				break;
+			case 'H':
+				teamGroupH.add(new Team(country));
+				break;
 			}
 
 			return this;

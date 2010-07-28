@@ -24,23 +24,23 @@ import com.google.common.collect.ImmutableBiMap.Builder;
 
 class ClassMapper<A extends ActiveRecord> {
 
-	private final String						LEFT_COLUMN	= "cheesecake", RIGHT_COLUMN = "cherrybomb";
+	private final String LEFT_COLUMN = "cheesecake", RIGHT_COLUMN = "cherrybomb";
 
 	// TODO: add bimap mapping column names to member names and back
 
-	private final String						tablename;
+	private final String tablename;
 
-	private final ImmutableBiMap<String, Field>	columnMap;
+	private final ImmutableBiMap<String, Field> columnMap;
 
-	private final ImmutableBiMap<String, Field>	oneToMany;
+	private final ImmutableBiMap<String, Field> oneToMany;
 
-	private final ActiveRecordMapper			mapper;
+	private final ActiveRecordMapper mapper;
 
-	private Field								idField;
+	private Field idField;
 
-	private final Class<A>						mappedClass;
+	private final Class<A> mappedClass;
 
-	private boolean								built		= false;
+	private boolean built = false;
 
 	public ClassMapper(Class<A> activeRecord, ActiveRecordMapper mapper, String prefix) {
 		this.tablename = (prefix != null ? prefix + "_" : "") + javaToUnderscore(activeRecord.getSimpleName());
@@ -115,9 +115,9 @@ class ClassMapper<A extends ActiveRecord> {
 		ImmutableBiMap.Builder<String, Field> oneToManyBuilder = new Builder<String, Field>();
 
 		for (Field field : sets)
-			if (field.isAnnotationPresent(Inverse.class))
+			if (field.isAnnotationPresent(Inverse.class)) {
 				oneToManyBuilder.put(tableNameForInverse(field), field);
-			else
+			} else
 				oneToManyBuilder.put(tablename + "_" + javaToUnderscore(field.getName()), field);
 
 		this.oneToMany = oneToManyBuilder.build();
@@ -154,7 +154,7 @@ class ClassMapper<A extends ActiveRecord> {
 			columnsAndSqlTypes.put(columnMap.inverse().get(f), TypeMapper.postgresForJava(f.getType()));
 
 		String sql = "create table " + tablename + " ("
-				+ Joiner.on(", ").withKeyValueSeparator(" ").join(columnsAndSqlTypes) + ");";
+		+ Joiner.on(", ").withKeyValueSeparator(" ").join(columnsAndSqlTypes) + ");";
 
 		Statement statement = connection.createStatement();
 		statement.execute(sql);
@@ -179,7 +179,7 @@ class ClassMapper<A extends ActiveRecord> {
 				continue;
 
 			ClassMapper<? extends ActiveRecord> classMapper = mapper
-					.getClassMapperForClass((Class<? extends ActiveRecord>) setType);
+			.getClassMapperForClass((Class<? extends ActiveRecord>) setType);
 			classMapper.createTable(connection);
 		}
 
@@ -191,7 +191,7 @@ class ClassMapper<A extends ActiveRecord> {
 
 			Statement addForeign = connection.createStatement();
 			String sqlForeign = "alter table " + tablename + " add constraint " + constraintName + " foreign key ("
-					+ columnName + ") references " + referencedTable + " (id);";
+			+ columnName + ") references " + referencedTable + " (id);";
 
 			addForeign.execute(sqlForeign);
 			addForeign.close();
@@ -202,7 +202,7 @@ class ClassMapper<A extends ActiveRecord> {
 
 	/**
 	 * Helper method of createTable().
-	 *
+	 * 
 	 * @param connection
 	 * @throws SQLException
 	 */
@@ -223,7 +223,7 @@ class ClassMapper<A extends ActiveRecord> {
 
 			if (ActiveRecord.class.isAssignableFrom(type)) {
 				ClassMapper<? extends ActiveRecord> inverseMapper = mapper
-						.getClassMapperForClass((Class<? extends ActiveRecord>) type);
+				.getClassMapperForClass((Class<? extends ActiveRecord>) type);
 				referencedTableName = mapper.getClassMapperForClass((Class<? extends ActiveRecord>) type).tablename;
 			}
 
@@ -311,7 +311,7 @@ class ClassMapper<A extends ActiveRecord> {
 				continue;
 
 			ClassMapper<? extends ActiveRecord> classMapper = mapper
-					.getClassMapperForClass((Class<? extends ActiveRecord>) setType);
+			.getClassMapperForClass((Class<? extends ActiveRecord>) setType);
 			classMapper.dropTable(connection);
 		}
 
@@ -352,8 +352,8 @@ class ClassMapper<A extends ActiveRecord> {
 
 		if (!columnsAndForeignKeys.isEmpty()) {
 			String updateForeignKeys = "update " + tablename + " set "
-					+ Joiner.on(", ").withKeyValueSeparator(" = ").join(columnsAndForeignKeys) + " where id ="
-					+ record.getId() + ";";
+			+ Joiner.on(", ").withKeyValueSeparator(" = ").join(columnsAndForeignKeys) + " where id ="
+			+ record.getId() + ";";
 
 			Statement updateFK = connection.createStatement();
 
@@ -361,7 +361,6 @@ class ClassMapper<A extends ActiveRecord> {
 			updateFK.close();
 		}
 		// Save entries one-to-many relations
-
 		for (Entry<String, Field> entry : oneToMany.entrySet()) {
 			Field f = entry.getValue();
 			String relation = entry.getKey();
@@ -379,16 +378,18 @@ class ClassMapper<A extends ActiveRecord> {
 			/*
 			 * Save <code>a</code> if it hasn't been saved before.
 			 */
-			for (ActiveRecord a : set)
-				if (a.getId() == null) {
-					ClassMapper classMapper = mapper.getClassMapperForClass(a.getClass());
-					classMapper.save(connection, a);
-				}
+			if (set != null)
+				for (ActiveRecord a : set)
+					if (a.getId() == null) {
+						ClassMapper classMapper = mapper.getClassMapperForClass(a.getClass());
+						classMapper.save(connection, a);
+					}
 
 			String deleteSql = "delete from " + relation + " where " + (inverse ? RIGHT_COLUMN : LEFT_COLUMN) + " = "
-					+ record.getId() + ";";
+			+ record.getId() + ";";
 			Statement deleteStatement = connection.createStatement();
 			deleteStatement.execute(deleteSql);
+
 
 			if (set == null || set.isEmpty())
 				continue;
@@ -436,15 +437,19 @@ class ClassMapper<A extends ActiveRecord> {
 	}
 
 	public A findById(Connection connection, Long id) throws SQLException {
+		return findById(connection, id, null);
+	}
+
+	public A findById(Connection connection, Long id, ActiveRecord origin) throws SQLException {
 		List<String> columnNames = new ArrayList<String>(columnMap.keySet());
 
 		Statement statement = connection.createStatement();
 		String sql = "select " + Joiner.on(", ").join(columnNames) + " from " + tablename + " where id =" + id
-				+ " limit 1;";
+		+ " limit 1;";
 
 		ResultSet resultSet = statement.executeQuery(sql);
 
-		List<A> results = fromResultSet(connection, resultSet);
+		List<A> results = fromResultSet(connection, resultSet, origin);
 
 		if (results.size() == 1)
 			return results.get(0);
@@ -459,7 +464,7 @@ class ClassMapper<A extends ActiveRecord> {
 	 * where relations.get(0) is one of the binary relations specified in
 	 * {@link Relation}. The results can be ordered optionally by setting
 	 * "orderByFields" to a non null list of field values.
-	 *
+	 * 
 	 * @param fields
 	 * @param relations
 	 * @param values
@@ -535,7 +540,7 @@ class ClassMapper<A extends ActiveRecord> {
 	}
 
 	public Set<A> obtainContentsOfRelation(Connection connection, String relationName, Long ownerId, boolean inverse)
-			throws SQLException {
+	throws SQLException {
 		StringBuffer sqlStatement = new StringBuffer();
 		sqlStatement.append("select ");
 		sqlStatement.append(Joiner.on(",").join(columnMap.keySet()));
@@ -599,7 +604,7 @@ class ClassMapper<A extends ActiveRecord> {
 				throw new IllegalStateException("Inverse must not specify an inverse itself");
 
 			ClassMapper<? extends ActiveRecord> clazzMapper = mapper
-					.getClassMapperForClass((Class<? extends ActiveRecord>) clazz);
+			.getClassMapperForClass((Class<? extends ActiveRecord>) clazz);
 			return clazzMapper.oneToMany.inverse().get(original);
 		} catch (ClassNotFoundException e) {
 			throw new IllegalStateException(e); // XXX
@@ -624,7 +629,7 @@ class ClassMapper<A extends ActiveRecord> {
 	 * Inserting an active record to the db that has not been saved before. The
 	 * method does not take care of the one-to-many realtions of an active
 	 * record.
-	 *
+	 * 
 	 * @param connection
 	 * @param record
 	 * @throws SQLException
@@ -656,7 +661,7 @@ class ClassMapper<A extends ActiveRecord> {
 
 		Statement statement = connection.createStatement();
 		String sql = "insert into " + tablename + "(" + Joiner.on(", ").join(columns) + ") values ("
-				+ Joiner.on(", ").join(values) + ") returning id;";
+		+ Joiner.on(", ").join(values) + ") returning id;";
 
 		ResultSet result = statement.executeQuery(sql);
 
@@ -672,7 +677,7 @@ class ClassMapper<A extends ActiveRecord> {
 	/**
 	 * Updating a record in the db. The method does not take care of the
 	 * one-to-many realtions of an active record.
-	 *
+	 * 
 	 * @param connection
 	 * @param record
 	 * @throws SQLException
@@ -703,15 +708,15 @@ class ClassMapper<A extends ActiveRecord> {
 		Statement statement = connection.createStatement();
 
 		String sql = "update " + tablename + " set "
-				+ Joiner.on(", ").withKeyValueSeparator(" = ").join(columnsAndValues) + " where id =" + record.getId()
-				+ ";";
+		+ Joiner.on(", ").withKeyValueSeparator(" = ").join(columnsAndValues) + " where id =" + record.getId()
+		+ ";";
 
 		statement.execute(sql);
 		statement.close();
 	}
 
 	private void assignEnumToField(A record, Class<?> type, Field field, String value) throws IllegalArgumentException,
-			IllegalAccessException {
+	IllegalAccessException {
 		// refactor this away
 		if (value == null || value.equals("null")) {
 			field.set(record, null);
@@ -728,12 +733,19 @@ class ClassMapper<A extends ActiveRecord> {
 		throw new IllegalStateException("Enum " + field.getType().getName() + " does not have a value " + value);
 	}
 
+	private List<A> fromResultSet(Connection connection, ResultSet resultSet) throws SQLException {
+		return fromResultSet(connection, resultSet, null);
+
+	}
+
 	/**
 	 * @param resultSet
 	 * @return
 	 * @throws SQLException
 	 */
-	private List<A> fromResultSet(Connection connection, ResultSet resultSet) throws SQLException {
+	private List<A> fromResultSet(Connection connection, ResultSet resultSet, ActiveRecord origin) throws SQLException {
+
+
 		List<A> results = new ArrayList<A>();
 
 		List<String> columnNames = Lists.newArrayList(columnMap.keySet());
@@ -741,26 +753,32 @@ class ClassMapper<A extends ActiveRecord> {
 
 		while (resultSet.next()) {
 			A record = null;
+
 			try {
 				record = mappedClass.newInstance();
-
+				// set id
+				idField.set(record, resultSet.getLong("id"));
 				for (int i = 0; i < columnNames.size(); i++) {
 					Field f = fields.get(i);
 					Object v = resultSet.getObject(columnNames.get(i));
 					f.setAccessible(true);
 					Class<?> type = f.getType();
 
-					if (type.isEnum())
+					if (origin != null && type.equals(origin.getClass())
+							&& resultSet.getLong(columnNames.get(i)) == origin.getId()) {
+						fields.get(i).set(record, origin);
+					} else if (type.isEnum()) {
 						assignEnumToField(record, type, fields.get(i), (String) v);
-					else if (ActiveRecord.class.isAssignableFrom(type)) {
+					} else if (ActiveRecord.class.isAssignableFrom(type)) {
 						// handle one-to-one relations
 						long id = resultSet.getLong(columnNames.get(i));
 						ClassMapper<? extends ActiveRecord> classMapper = mapper
-								.getClassMapperForClass((Class<? extends ActiveRecord>) type);
-						ActiveRecord activeRecord = classMapper.findById(connection, id);
+						.getClassMapperForClass((Class<? extends ActiveRecord>) type);
+						ActiveRecord activeRecord = classMapper.findById(connection, id, record);
 						fields.get(i).set(record, activeRecord);
-					} else
+					} else{
 						fields.get(i).set(record, resultSet.getObject(columnNames.get(i)));
+					}
 				}
 
 				for (Entry<String, Field> entry : oneToMany.entrySet()) {
@@ -768,7 +786,7 @@ class ClassMapper<A extends ActiveRecord> {
 					boolean inverse = f.isAnnotationPresent(Inverse.class);
 					ParameterizedType set = (ParameterizedType) f.getGenericType();
 					Class<? extends ActiveRecord> setType = (Class<? extends ActiveRecord>) set
-							.getActualTypeArguments()[0];
+					.getActualTypeArguments()[0];
 					ClassMapper<? extends ActiveRecord> mapperForLazySet = mapper.getClassMapperForClass(setType);
 					LazySet<?> lazySet = new LazySet<ActiveRecord>(mapper,
 							(ClassMapper<ActiveRecord>) mapperForLazySet, entry.getKey(), record.getId(), inverse);
@@ -780,6 +798,8 @@ class ClassMapper<A extends ActiveRecord> {
 			} catch (InstantiationException e) {
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			results.add(record);
