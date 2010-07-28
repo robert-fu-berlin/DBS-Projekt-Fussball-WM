@@ -12,6 +12,8 @@ import active_record.ActiveRecord;
 
 import com.google.common.collect.Lists;
 
+import dbs_fussball.RandomResourceFactory;
+
 public class Cup extends ActiveRecord {
 
 	private Match finalMatch, thirdPlaceMatch;
@@ -127,28 +129,28 @@ public class Cup extends ActiveRecord {
 
 			switch (group) {
 			case 'A':
-				teamGroupA.add(new Team(country));
+				teamGroupA.add(RandomResourceFactory.randomTeam(country));
 				break;
 			case 'B':
-				teamGroupB.add(new Team(country));
+				teamGroupB.add(RandomResourceFactory.randomTeam(country));
 				break;
 			case 'C':
-				teamGroupC.add(new Team(country));
+					teamGroupC.add(RandomResourceFactory.randomTeam(country));
 				break;
 			case 'D':
-				teamGroupD.add(new Team(country));
+					teamGroupD.add(RandomResourceFactory.randomTeam(country));
 				break;
 			case 'E':
-				teamGroupE.add(new Team(country));
+					teamGroupE.add(RandomResourceFactory.randomTeam(country));
 				break;
 			case 'F':
-				teamGroupF.add(new Team(country));
+					teamGroupF.add(RandomResourceFactory.randomTeam(country));
 				break;
 			case 'G':
-				teamGroupG.add(new Team(country));
+					teamGroupG.add(RandomResourceFactory.randomTeam(country));
 				break;
 			case 'H':
-				teamGroupH.add(new Team(country));
+					teamGroupH.add(RandomResourceFactory.randomTeam(country));
 				break;
 			}
 
