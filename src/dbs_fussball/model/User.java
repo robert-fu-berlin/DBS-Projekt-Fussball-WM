@@ -17,7 +17,7 @@ public class User extends ActiveRecord {
 
 	private final Set<Match> permissions;
 
-	@Inverse("dbs_fussball.model.Usergroup.user")
+	@Inverse("dbs_fussball.model.Usergroup.users")
 	private final Set<Usergroup> usergroups;
 
 	public User(String email, String password) {

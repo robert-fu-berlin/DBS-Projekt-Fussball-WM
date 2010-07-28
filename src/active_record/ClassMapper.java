@@ -47,6 +47,8 @@ class ClassMapper<A extends ActiveRecord> {
 		this.mappedClass = activeRecord;
 		this.mapper = mapper;
 
+		ImmutableBiMap.Builder<String, Field> inverseFieldsBuilder = new Builder<String, Field>();
+
 		// Obtain a list of all fields the class has access to.
 		List<Field> fields = new ArrayList<Field>();
 		List<Field> sets = new ArrayList<Field>();
@@ -82,6 +84,7 @@ class ClassMapper<A extends ActiveRecord> {
 
 				if (f.isAnnotationPresent(Inverse.class))
 					if (ActiveRecord.class.isAssignableFrom(setType)) {
+						sets.add(f);
 						iterator.remove();
 						continue;
 					} else
@@ -110,6 +113,7 @@ class ClassMapper<A extends ActiveRecord> {
 		columnMap = columnsBuilder.build();
 
 		ImmutableBiMap.Builder<String, Field> oneToManyBuilder = new Builder<String, Field>();
+
 		for (Field field : sets)
 			if (field.isAnnotationPresent(Inverse.class))
 				oneToManyBuilder.put(tableNameForInverse(field), field);
@@ -179,6 +183,7 @@ class ClassMapper<A extends ActiveRecord> {
 			classMapper.createTable(connection);
 		}
 
+		// Add foreign key constraints to this table
 		for (Field f : foreignKeys) {
 			String columnName = columnMap.inverse().get(f);
 			String constraintName = tablename + "_" + columnName + "_fk";
@@ -371,6 +376,15 @@ class ClassMapper<A extends ActiveRecord> {
 				throw new IllegalStateException();
 			}
 
+			/*
+			 * Save <code>a</code> if it hasn't been saved before.
+			 */
+			for (ActiveRecord a : set)
+				if (a.getId() == null) {
+					ClassMapper classMapper = mapper.getClassMapperForClass(a.getClass());
+					classMapper.save(connection, a);
+				}
+
 			String deleteSql = "delete from " + relation + " where " + (inverse ? RIGHT_COLUMN : LEFT_COLUMN) + " = "
 					+ record.getId() + ";";
 			Statement deleteStatement = connection.createStatement();
@@ -395,14 +409,6 @@ class ClassMapper<A extends ActiveRecord> {
 
 			boolean first = true;
 			for (ActiveRecord a : set) {
-				/*
-				 * Save <code>a</code> if it hasn't been saved before.
-				 * XXX should probably be done outside of this loop.
-				 */
-				if (a.getId() == null) {
-					ClassMapper classMapper = mapper.getClassMapperForClass(a.getClass());
-					classMapper.save(connection, a);
-				}
 
 				if (!first)
 					sqlStatement.append(", ");
