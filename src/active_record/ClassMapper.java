@@ -115,9 +115,9 @@ class ClassMapper<A extends ActiveRecord> {
 		ImmutableBiMap.Builder<String, Field> oneToManyBuilder = new Builder<String, Field>();
 
 		for (Field field : sets)
-			if (field.isAnnotationPresent(Inverse.class)) {
+			if (field.isAnnotationPresent(Inverse.class))
 				oneToManyBuilder.put(tableNameForInverse(field), field);
-			} else
+			else
 				oneToManyBuilder.put(tablename + "_" + javaToUnderscore(field.getName()), field);
 
 		this.oneToMany = oneToManyBuilder.build();
@@ -202,7 +202,7 @@ class ClassMapper<A extends ActiveRecord> {
 
 	/**
 	 * Helper method of createTable().
-	 * 
+	 *
 	 * @param connection
 	 * @throws SQLException
 	 */
@@ -464,7 +464,7 @@ class ClassMapper<A extends ActiveRecord> {
 	 * where relations.get(0) is one of the binary relations specified in
 	 * {@link Relation}. The results can be ordered optionally by setting
 	 * "orderByFields" to a non null list of field values.
-	 * 
+	 *
 	 * @param fields
 	 * @param relations
 	 * @param values
@@ -629,7 +629,7 @@ class ClassMapper<A extends ActiveRecord> {
 	 * Inserting an active record to the db that has not been saved before. The
 	 * method does not take care of the one-to-many realtions of an active
 	 * record.
-	 * 
+	 *
 	 * @param connection
 	 * @param record
 	 * @throws SQLException
@@ -677,7 +677,7 @@ class ClassMapper<A extends ActiveRecord> {
 	/**
 	 * Updating a record in the db. The method does not take care of the
 	 * one-to-many realtions of an active record.
-	 * 
+	 *
 	 * @param connection
 	 * @param record
 	 * @throws SQLException
@@ -765,20 +765,19 @@ class ClassMapper<A extends ActiveRecord> {
 					Class<?> type = f.getType();
 
 					if (origin != null && type.equals(origin.getClass())
-							&& resultSet.getLong(columnNames.get(i)) == origin.getId()) {
+							&& resultSet.getLong(columnNames.get(i)) == origin.getId())
 						fields.get(i).set(record, origin);
-					} else if (type.isEnum()) {
+					else if (type.isEnum())
 						assignEnumToField(record, type, fields.get(i), (String) v);
-					} else if (ActiveRecord.class.isAssignableFrom(type)) {
+					else if (ActiveRecord.class.isAssignableFrom(type)) {
 						// handle one-to-one relations
 						long id = resultSet.getLong(columnNames.get(i));
 						ClassMapper<? extends ActiveRecord> classMapper = mapper
 						.getClassMapperForClass((Class<? extends ActiveRecord>) type);
 						ActiveRecord activeRecord = classMapper.findById(connection, id, record);
 						fields.get(i).set(record, activeRecord);
-					} else{
+					} else
 						fields.get(i).set(record, resultSet.getObject(columnNames.get(i)));
-					}
 				}
 
 				for (Entry<String, Field> entry : oneToMany.entrySet()) {
@@ -786,7 +785,7 @@ class ClassMapper<A extends ActiveRecord> {
 					boolean inverse = f.isAnnotationPresent(Inverse.class);
 					ParameterizedType set = (ParameterizedType) f.getGenericType();
 					Class<? extends ActiveRecord> setType = (Class<? extends ActiveRecord>) set
-					.getActualTypeArguments()[0];
+							.getActualTypeArguments()[0];
 					ClassMapper<? extends ActiveRecord> mapperForLazySet = mapper.getClassMapperForClass(setType);
 					LazySet<?> lazySet = new LazySet<ActiveRecord>(mapper,
 							(ClassMapper<ActiveRecord>) mapperForLazySet, entry.getKey(), record.getId(), inverse);

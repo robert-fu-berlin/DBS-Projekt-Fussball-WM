@@ -17,7 +17,7 @@ public class User extends ActiveRecord {
 
 	private Set<Match>		permissions;
 
-	@Inverse("dbs_fussball.model.Usergroup.user")
+	@Inverse("dbs_fussball.model.Usergroup.users")
 	private Set<Usergroup>	usergroups;
 
 	/**
@@ -82,15 +82,12 @@ public class User extends ActiveRecord {
 	@Override
 	public List<ValidationFailure> validate() {
 		List<ValidationFailure> failures = new ArrayList<ValidationFailure>();
-		if (email == null) {
+		if (email == null)
 			failures.add(new ValidationFailure("User must have an email"));
-		}
-		if (!email.matches("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")) {
+		if (!email.matches("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"))
 			failures.add(new ValidationFailure("Email must have valid format"));
-		}
-		if (passwordHash == null || passwordHash.length() != 32) {
+		if (passwordHash == null || passwordHash.length() != 32)
 			failures.add(new ValidationFailure("User must have a 32 character long md5 password hash"));
-		}
 		return failures;
 	}
 }

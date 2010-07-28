@@ -1,10 +1,6 @@
 package dbs_fussball.model;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import active_record.ActiveRecord;
-import active_record.Inverse;
 
 public class Event extends ActiveRecord {
 	public enum Type {
@@ -33,6 +29,16 @@ public class Event extends ActiveRecord {
 		 * to.
 		 */
 		GOAL,
+
+		/**
+		 * Indicates a penalty goal.
+		 * Event.getPrimary() must return the Person that scored the goal.
+		 * Event.getSecondary() must return <code>null</code>.
+		 * <p>
+		 * The goal is counted toward the goals of the Team the scorer belongs
+		 * to.
+		 */
+		PENALTY_GOAL,
 
 		/**
 		 * Indicates an own goal.
@@ -86,7 +92,7 @@ public class Event extends ActiveRecord {
 
 	/**
 	 * Factory method for Events of Type {@link Event.Type.END}.
-	 * 
+	 *
 	 * @param time
 	 *            The time the match ended, in seconds after start.
 	 */
@@ -168,7 +174,7 @@ public class Event extends ActiveRecord {
 	/**
 	 * Returns the primary person of this event. The precise meaning of this
 	 * is dependent on this event�s {@link Type}.
-	 * 
+	 *
 	 * @return
 	 *         This event�s secondary person or <code>null</code> if there is
 	 *         none.
@@ -180,7 +186,7 @@ public class Event extends ActiveRecord {
 	/**
 	 * Returns the secondary person of this event. The precise meaning of this
 	 * is dependent on this event�s {@link Type}.
-	 * 
+	 *
 	 * @return
 	 *         This event�s secondary person or <code>null</code> if there is
 	 *         none.
@@ -200,5 +206,5 @@ public class Event extends ActiveRecord {
 	public void setAnnotation(String annotation) {
 		this.annotation = annotation;
 	}
-	
+
 }

@@ -76,6 +76,14 @@ public class Match extends ActiveRecord {
 		return startingLineUpTeamA.remove(player);
 	}
 
+	public int numberOfPlayersInLineUpTeamA() {
+		return startingLineUpTeamA.size();
+	}
+
+	public int numberOfPlayersInLineUpTeamB() {
+		return startingLineUpTeamB.size();
+	}
+
 	public Iterable<Person> playersOfLineUpTeamA() {
 		return Iterables.unmodifiableIterable(startingLineUpTeamA);
 	}
@@ -160,5 +168,39 @@ public class Match extends ActiveRecord {
 
 	public String getAnnotation() {
 		return annotation;
+	}
+
+	public int getGoalsA() {
+		int goals = 0;
+		for (Event e : events)
+			switch (e.getType()) {
+				case GOAL:
+				case PENALTY_GOAL:
+					if (teamA.containsPlayer(e.getPrimary()))
+						goals++;
+					break;
+				case OWN_GOAL:
+					if (teamB.containsPlayer(e.getPrimary()))
+						goals++;
+					break;
+			}
+		return goals;
+	}
+
+	public int getGoalsB() {
+		int goals = 0;
+		for (Event e : events)
+			switch (e.getType()) {
+				case GOAL:
+				case PENALTY_GOAL:
+					if (teamB.containsPlayer(e.getPrimary()))
+						goals++;
+					break;
+				case OWN_GOAL:
+					if (teamA.containsPlayer(e.getPrimary()))
+						goals++;
+					break;
+			}
+		return goals;
 	}
 }

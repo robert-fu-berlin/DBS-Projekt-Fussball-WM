@@ -107,7 +107,7 @@ public class Team extends ActiveRecord {
 		return doctor;
 	}
 
-	public FifaCountry getNation() {
+	public FifaCountry getCountry() {
 		return country;
 	}
 

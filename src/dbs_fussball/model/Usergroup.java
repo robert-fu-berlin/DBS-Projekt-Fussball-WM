@@ -10,9 +10,9 @@ import active_record.ValidationFailure;
 
 public class Usergroup extends ActiveRecord{
 
-	private final String name;
-	private final Set<User> users;
-	private final Set<Match> permissions;
+	private String		name;
+	private Set<User>	users;
+	private Set<Match>	permissions;
 
 	public Usergroup(String name) {
 		this.name = name;
@@ -39,7 +39,7 @@ public class Usergroup extends ActiveRecord{
 	public boolean addUser(User u) {
 		return users.add(u);
 	}
-	
+
 	@Override
 	public List<ValidationFailure> validate() {
 		List<ValidationFailure> failures = new ArrayList<ValidationFailure>();

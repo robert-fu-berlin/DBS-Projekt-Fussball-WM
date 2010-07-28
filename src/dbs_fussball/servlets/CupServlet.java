@@ -31,12 +31,13 @@ public class CupServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		if (request.getPathInfo() == null) {
+		if (request.getPathInfo() == null)
 			getServletContext().getRequestDispatcher("/JSP/Cup.list.jsp").forward(request, response);
-		} else if (request.getPathInfo().matches("^/new/?$")) {
+		else if (request.getPathInfo().matches("^/new/?$"))
 			getServletContext().getRequestDispatcher("/JSP/Cup.new.jsp").forward(request, response);
-		} else if (request.getPathInfo().matches("^/[0-9]+/?$")) {
-
+		else if (request.getPathInfo().matches("^/[0-9]+/?$")) {
+			doGetShowCup(request, response);
+			return;
 		} else if (request.getPathInfo().matches("^/[0-9]+/edit/?$")) {
 
 		}
@@ -45,9 +46,25 @@ public class CupServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
 			IOException {
-		if (request.getPathInfo().matches("^/new/?$")) {
+		if (request.getPathInfo().matches("^/new/?$"))
 			doPostNewCup(request, response);
-		}
+	}
+
+	private void doGetShowCup(HttpServletRequest request, HttpServletResponse response) throws ServletException,
+			IOException {
+		assert request.getPathInfo().matches("^/[0-9]+/?$");
+
+		String[] pathComponents = request.getPathInfo().split("/");
+		Long cupId = Long.parseLong(pathComponents[1]);
+		Cup cup = null;
+
+		cup = arm.find(Cup.class).where("id").is(cupId).please();
+
+		log("Found cup with id " + (cup != null ? cup.getId() : "null!"));
+
+		request.setAttribute("cup", cup);
+
+		getServletContext().getRequestDispatcher("/JSP/Cup.show.jsp").forward(request, response);
 	}
 
 	private void doPostNewCup(HttpServletRequest request, HttpServletResponse response) throws ServletException,
@@ -62,28 +79,25 @@ public class CupServlet extends HttpServlet {
 		 * Iterate over all expected parameters, add an error if a parameters is
 		 * bogus, missing or duplicate
 		 */
-		for (char group = 'A'; group <= 'H'; group++) {
+		for (char group = 'A'; group <= 'H'; group++)
 			for (int pos = 0; pos < 4; pos++) {
 				String countryCode = request.getParameter("group_" + group + "_" + pos);
-				if (countryCode == null || FifaCountry.countryForCode(countryCode) == null) {
+				if (countryCode == null || FifaCountry.countryForCode(countryCode) == null)
 					errors.add("Feld " + (pos + 1) + " in Gruppe " + group + " ist unbesetzt.");
-				} else {
+				else {
 					FifaCountry country = FifaCountry.countryForCode(countryCode);
 					builder.addCountryToGroup(country, group);
-					if (!countries.add(country)) {
+					if (!countries.add(country))
 						errors.add(country + " wurde mehrfach eingetragen.");
-					}
 				}
 			}
-		}
 
 		if (!errors.isEmpty()) {
 			request.setAttribute("error", errors);
 
 			// We add the parameters to the attributes map so we can display what the user entered
-			for (Entry<String, String[]> entry : parameters.entrySet()) {
+			for (Entry<String, String[]> entry : parameters.entrySet())
 				request.setAttribute(entry.getKey(), entry.getValue()[0]);
-			}
 			getServletContext().getRequestDispatcher("/JSP/Cup.new.jsp").forward(request, response);
 			return;
 		}
