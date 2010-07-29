@@ -51,11 +51,11 @@
 		   if (match.getTeamA().containsAssociate(e.getPrimary()))
 			   exchangesA.add(e);
 		   else
-			   exchangesA.add(e);
+			   exchangesB.add(e);
 	   }
    }
    List<Person> startingLineupA = Lists.newArrayList(match.playersOfLineUpTeamA());
-   List<Person> startingLineupB = Lists.newArrayList(match.playersOfLineUpTeamA());
+   List<Person> startingLineupB = Lists.newArrayList(match.playersOfLineUpTeamB());
 %>
 <table>
 	<% for (int i = 0; i < Math.max(startingLineupA.size(), startingLineupB.size()); i++) { %>
@@ -76,12 +76,12 @@
 	<% for (int i = 0; i < Math.max(exchangesA.size(), exchangesB.size()); i++) { %>
 		<tr>
 			<% if (i < exchangesA.size()) { %>
-				<td><%= exchangesA.get(i).getPrimary() %> (<%= exchangesA.get(i).getTime() %>')</td>
+				<td><%= exchangesA.get(i).getSecondary() %> (<%= exchangesA.get(i).getTime() %>')</td>
 			<% } else { %>
 				<td></td>
 			<% } %>
 			<% if (i < exchangesB.size()) { %>
-				<td><%= exchangesB.get(i).getPrimary() %> (<%= exchangesB.get(i).getTime() %>')</td>
+				<td><%= exchangesB.get(i).getSecondary() %> (<%= exchangesB.get(i).getTime() %>')</td>
 			<% } else { %>
 				<td></td>
 			<% } %>

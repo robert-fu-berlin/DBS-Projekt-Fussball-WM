@@ -2,6 +2,8 @@ package dbs_fussball.model;
 
 import active_record.ActiveRecord;
 
+import com.google.common.base.Preconditions;
+
 public class Event extends ActiveRecord {
 	public enum Type {
 		BEGIN, HALF_TIME, EXTRA_TIME, PENALTIES, END,
@@ -166,6 +168,40 @@ public class Event extends ActiveRecord {
 
 	}
 
+	public Event(Type type, Person primary, Person secondary, Float time) {
+		this.type = type;
+
+		Preconditions.checkNotNull(time);
+		Preconditions.checkArgument(time >= 0 && time != Float.POSITIVE_INFINITY);
+		switch (type) {
+			case GOAL:
+			case OWN_GOAL:
+			case PENALTY_GOAL:
+				Preconditions.checkNotNull(primary);
+				Preconditions.checkArgument(secondary == null);
+				break;
+
+			case BEGIN:
+				Preconditions.checkArgument(time.equals(0.0f));
+			case END:
+			case EXTRA_TIME:
+			case HALF_TIME:
+				Preconditions.checkArgument(primary == null && secondary == null);
+				break;
+
+			case FOUL:
+			case RED_CARD:
+			case YELLOW_CARD:
+			case EXCHANGE:
+				Preconditions.checkNotNull(primary);
+				Preconditions.checkNotNull(secondary);
+				break;
+		}
+
+		this.primaryPerson = primary;
+		this.secondaryPerson = secondary;
+		this.time = time;
+	}
 
 	public String getAnnotation() {
 		return annotation;

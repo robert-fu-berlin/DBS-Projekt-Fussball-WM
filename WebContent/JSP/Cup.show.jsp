@@ -1,6 +1,12 @@
 <%@ page import="dbs_fussball.model.*"%>
 <%@ page import="java.util.Set"%>
-<jsp:include page="Templates/Header.jsp" />
+<%@ page import="java.util.List"%>
+<%@ page import="java.util.ArrayList"%>
+<%@ page import="java.util.HashMap"%>
+<%@ page import="java.util.Map"%>
+<%@ page import="java.util.Collections"%>
+
+<%@page import="java.util.Comparator"%><jsp:include page="Templates/Header.jsp" />
 <% Cup cup = (Cup) request.getAttribute("cup"); %>
 <h1>Weltmeisterschaft <%= cup.getId() %></h1>
 <div class="ko-tree">
@@ -61,6 +67,51 @@
 	<% } %>
 
 </div>
+<% for (char group = 'A'; group <= 'H'; group++) { %>
+	<% List<Team> orderedByScore = new ArrayList<Team>(); %>
+	<% Set<Match> matchesForGroup = cup.getMatches(group); %>
+	<% final Map<Team, Integer> scores = new HashMap<Team, Integer>(); %>
+	<% for (Match match : matchesForGroup) {
+		
+		if (!scores.containsKey(match.getTeamA()))
+			scores.put(match.getTeamA(), 0);
+		if (!scores.containsKey(match.getTeamB()))
+			scores.put(match.getTeamB(), 0);
+		
+		if (!match.isOver())
+			continue;
+		
+	   	if (match.getGoalsA() == match.getGoalsB()) {
+	   		// one point each
+	   		scores.put(match.getTeamA(), scores.get(match.getTeamA()) + 1);
+	   		scores.put(match.getTeamB(), scores.get(match.getTeamB()) + 1);
+	   	} else if (match.getGoalsA() > match.getGoalsB()) {
+	   		scores.put(match.getTeamA(), scores.get(match.getTeamA()) + 3);
+	   	} else {
+	   		scores.put(match.getTeamB(), scores.get(match.getTeamB()) + 3);
+	   	}
+	   }
+	
+	   orderedByScore = new ArrayList(scores.keySet());
+	   Collections.sort(orderedByScore, new Comparator<Team>() {
+		   
+			public int compare(Team o1, Team o2) {
+			   return -1 * scores.get(o1).compareTo(scores.get(o2));
+			}
+			   
+	   });
+	   %>
+	<div>
+		<table>
+			<% for (Team t : orderedByScore) { %>
+			<tr>
+				<td><%= t.getCountry() %></td>
+				<td><%= scores.get(t) %></td>
+			</tr>
+			<% } %>
+		</table>
+	</div>
+<% } %>
 <div class="groups-table">
 	<% for (char group = 'A'; group <= 'H'; group++) {
 		// TODO sort by time

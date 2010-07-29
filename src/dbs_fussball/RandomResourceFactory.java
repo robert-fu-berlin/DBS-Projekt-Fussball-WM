@@ -112,7 +112,7 @@ public class RandomResourceFactory {
 
 	private static String toTitleCase(String string) {
 		Pattern p = Pattern.compile("(^|\\W)([a-z])");
-		Matcher m = p.matcher(string);
+		Matcher m = p.matcher(string.toLowerCase());
 		StringBuffer sb = new StringBuffer(string.length());
 		while (m.find())
 			m.appendReplacement(sb, m.group(1) + m.group(2).toUpperCase());

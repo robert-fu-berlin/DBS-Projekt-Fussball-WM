@@ -8,6 +8,7 @@ import java.util.Set;
 
 import active_record.ActiveRecord;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 
@@ -34,12 +35,15 @@ public class Match extends ActiveRecord {
 	}
 
 	public Match(Cup cup) {
+		Preconditions.checkNotNull(cup);
 		events = new HashSet<Event>();
 		this.cup = cup;
 	}
 
 	public Match(Cup cup, Team teamA, Team teamB) {
 		this(cup);
+		Preconditions.checkNotNull(teamA);
+		Preconditions.checkNotNull(teamB);
 		this.teamA = teamA;
 		this.teamB = teamB;
 	}
@@ -57,10 +61,15 @@ public class Match extends ActiveRecord {
 	}
 
 	public void setStartingTime(Date startingTime) {
+		Preconditions.checkNotNull(startingTime);
+
 		this.startingTime = startingTime.getTime();
 	}
 
 	public boolean addPlayerToLineUpTeamA(Person player) {
+		Preconditions.checkNotNull(player);
+		Preconditions.checkArgument(teamA.containsPlayer(player), "Player must be part of team.");
+
 		return startingLineUpTeamA.add(player);
 	}
 
@@ -73,6 +82,16 @@ public class Match extends ActiveRecord {
 	}
 
 	public boolean removePlayerFromLineUpTeamA(Person player) {
+		Preconditions.checkNotNull(player);
+		Preconditions.checkArgument(teamA.containsPlayer(player), "Player must be part of team.");
+
+		Set<Event> eventsToRemove = new HashSet<Event>();
+		for (Event e : events)
+			if (player.equals(e.getPrimary()) || player.equals(e.getSecondary()))
+				eventsToRemove.add(e);
+		for (Event e : eventsToRemove)
+			events.remove(e);
+
 		return startingLineUpTeamA.remove(player);
 	}
 
@@ -91,7 +110,11 @@ public class Match extends ActiveRecord {
 	public Iterator<Person> playersOfLineUpTeamAIterator() {
 		return Iterators.unmodifiableIterator(startingLineUpTeamA.iterator());
 	}
+
 	public boolean addPlayerToLineUpTeamB(Person player) {
+		Preconditions.checkNotNull(player);
+		Preconditions.checkArgument(teamB.containsPlayer(player), "Player must be part of team.");
+
 		return startingLineUpTeamB.add(player);
 	}
 
@@ -104,6 +127,18 @@ public class Match extends ActiveRecord {
 	}
 
 	public boolean removePlayerFromLineUpTeamB(Person player) {
+		Preconditions.checkNotNull(player);
+		Preconditions.checkArgument(teamB.containsPlayer(player), "Player must be part of team.");
+
+		for (Event e : events) {
+			if (e.getPrimary() != null)
+				Preconditions
+						.checkArgument(!player.equals(e.getPrimary()), "Player must not be referenced by an Event");
+			if (e.getSecondary() != null)
+				Preconditions.checkArgument(!player.equals(e.getSecondary()),
+						"Player must not be referenced by an Event");
+		}
+
 		return startingLineUpTeamB.remove(player);
 	}
 
@@ -115,7 +150,54 @@ public class Match extends ActiveRecord {
 		return Iterators.unmodifiableIterator(startingLineUpTeamB.iterator());
 	}
 	public boolean addEvent(Event event) {
+		switch (event.getType()) {
+			case EXCHANGE:
+				Preconditions.checkArgument(!isOnField(event.getSecondary(), event.getTime()),
+						"Player must be on the field");
+			case GOAL:
+			case PENALTY_GOAL:
+			case OWN_GOAL:
+			case YELLOW_CARD:
+			case RED_CARD:
+			case FOUL:
+				Preconditions.checkArgument(isOnField(event.getPrimary(), event.getTime()),
+						"Player must be on the field");
+				break;
+		}
+
 		return events.add(event);
+	}
+
+	private boolean isOnField(Person person, Float time) {
+		Preconditions.checkNotNull(person);
+		Preconditions.checkNotNull(time);
+
+		Float lowerBound = null;
+		if (startingLineUpTeamA.contains(person) || startingLineUpTeamB.contains(person))
+			lowerBound = 0.0f;
+		else
+			for (Event e : events)
+				if (e.getType() == Event.Type.EXCHANGE && person.equals(e.getSecondary())) {
+					lowerBound = e.getTime();
+					break;
+				}
+
+		if (lowerBound == null)
+			return false;
+
+		Float upperBound = null;
+		loop: for (Event e : events)
+			switch (e.getType()) {
+				case RED_CARD:
+				case EXCHANGE:
+					if (person.equals(e.getPrimary()))
+						break loop;
+			}
+
+		if (upperBound == null)
+			upperBound = Float.POSITIVE_INFINITY;
+
+		return lowerBound <= time && time < upperBound;
 	}
 
 	public boolean addEvent(Event event, Event... moreEvents) {
@@ -155,6 +237,9 @@ public class Match extends ActiveRecord {
 	}
 
 	public void setAttendace(Integer attendace) {
+		Preconditions.checkNotNull(attendace);
+		Preconditions.checkArgument(attendace > 0);
+
 		this.attendace = attendace;
 	}
 
@@ -163,6 +248,8 @@ public class Match extends ActiveRecord {
 	}
 
 	public void setAnnotation(String annotation) {
+		Preconditions.checkNotNull(annotation);
+
 		this.annotation = annotation;
 	}
 
@@ -202,5 +289,12 @@ public class Match extends ActiveRecord {
 					break;
 			}
 		return goals;
+	}
+
+	public boolean isOver() {
+		for (Event e : events)
+			if (e.getType() == Event.Type.END)
+				return true;
+		return false;
 	}
 }
