@@ -89,24 +89,24 @@ public class Cup extends ActiveRecord {
 
 	public Set<Match> getMatches(char group) {
 		switch (group) {
-			case 'A':
-				return Collections.unmodifiableSet(matchesGroupA);
-			case 'B':
-				return Collections.unmodifiableSet(matchesGroupB);
-			case 'C':
-				return Collections.unmodifiableSet(matchesGroupC);
-			case 'D':
-				return Collections.unmodifiableSet(matchesGroupD);
-			case 'E':
-				return Collections.unmodifiableSet(matchesGroupE);
-			case 'F':
-				return Collections.unmodifiableSet(matchesGroupF);
-			case 'G':
-				return Collections.unmodifiableSet(matchesGroupG);
-			case 'H':
-				return Collections.unmodifiableSet(matchesGroupH);
-			default:
-				throw new IllegalArgumentException("Group must be between A and H");
+		case 'A':
+			return Collections.unmodifiableSet(matchesGroupA);
+		case 'B':
+			return Collections.unmodifiableSet(matchesGroupB);
+		case 'C':
+			return Collections.unmodifiableSet(matchesGroupC);
+		case 'D':
+			return Collections.unmodifiableSet(matchesGroupD);
+		case 'E':
+			return Collections.unmodifiableSet(matchesGroupE);
+		case 'F':
+			return Collections.unmodifiableSet(matchesGroupF);
+		case 'G':
+			return Collections.unmodifiableSet(matchesGroupG);
+		case 'H':
+			return Collections.unmodifiableSet(matchesGroupH);
+		default:
+			throw new IllegalArgumentException("Group must be between A and H");
 		}
 	}
 
@@ -134,22 +134,22 @@ public class Cup extends ActiveRecord {
 				teamGroupB.add(RandomResourceFactory.randomTeam(country));
 				break;
 			case 'C':
-					teamGroupC.add(RandomResourceFactory.randomTeam(country));
+				teamGroupC.add(RandomResourceFactory.randomTeam(country));
 				break;
 			case 'D':
-					teamGroupD.add(RandomResourceFactory.randomTeam(country));
+				teamGroupD.add(RandomResourceFactory.randomTeam(country));
 				break;
 			case 'E':
-					teamGroupE.add(RandomResourceFactory.randomTeam(country));
+				teamGroupE.add(RandomResourceFactory.randomTeam(country));
 				break;
 			case 'F':
-					teamGroupF.add(RandomResourceFactory.randomTeam(country));
+				teamGroupF.add(RandomResourceFactory.randomTeam(country));
 				break;
 			case 'G':
-					teamGroupG.add(RandomResourceFactory.randomTeam(country));
+				teamGroupG.add(RandomResourceFactory.randomTeam(country));
 				break;
 			case 'H':
-					teamGroupH.add(RandomResourceFactory.randomTeam(country));
+				teamGroupH.add(RandomResourceFactory.randomTeam(country));
 				break;
 			}
 
@@ -255,7 +255,6 @@ public class Cup extends ActiveRecord {
 			for (int i = 1; i < 4; i++)
 				for (int j = 0; j < i; j++) {
 					cup.matchesGroupA.add(new Match(cup, teamsA.get(i), teamsA.get(j)));
-					System.out.println(teamsA.get(i) + " : " + teamsA.get(i));
 					cup.matchesGroupB.add(new Match(cup, teamsB.get(i), teamsB.get(j)));
 					cup.matchesGroupC.add(new Match(cup, teamsC.get(i), teamsC.get(j)));
 					cup.matchesGroupD.add(new Match(cup, teamsD.get(i), teamsD.get(j)));

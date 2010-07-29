@@ -263,4 +263,7 @@ public class Person extends ActiveRecord {
 		return (firstName == null ? "" : firstName + " ") + (stageName == null ? "" : stageName + " ") + (lastName == null ? "" : lastName);
 	}
 
+	public Set<Team> getPlayedTeams() {
+		return playedTeams;
+	}
 }

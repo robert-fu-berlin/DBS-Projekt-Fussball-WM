@@ -1,6 +1,5 @@
 package dbs_fussball;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +11,8 @@ import dbs_fussball.model.Match;
 import dbs_fussball.model.Person;
 import dbs_fussball.model.Stadium;
 import dbs_fussball.model.Team;
+import dbs_fussball.model.User;
+import dbs_fussball.model.Usergroup;
 
 public class Main {
 	/**
@@ -26,6 +27,8 @@ public class Main {
 		classes.add(Person.class);
 		classes.add(Stadium.class);
 		classes.add(Team.class);
+		classes.add(User.class);
+		classes.add(Usergroup.class);
 
 		ActiveRecordMapper arm = new ActiveRecordMapper("dbs_fussball", "postgres", "vuvuzela", "dbs");
 		// Setup tables
@@ -47,18 +50,19 @@ public class Main {
 				System.err.println(e.getLocalizedMessage());
 			}
 		}
+		System.out.println();
 
-		Person lukas = new Person("Lukas", "Podolski");
-		lukas.setStageName("Poldi");
-
-		try {
-			arm.save(lukas);
-		} catch (SQLException e) {
-			System.err.println("Could not save " + lukas.getLastName());
-		}
-
-		Person maybeLukas = arm.find(Person.class).where("firstName").is("Lukas").please();
-
-		System.out.println(maybeLukas.getFirstName() + " " + maybeLukas.getLastName());
+		//		Person lukas = new Person("Lukas", "Podolski");
+		//		lukas.setStageName("Poldi");
+		//
+		//		try {
+		//			arm.save(lukas);
+		//		} catch (SQLException e) {
+		//			System.err.println("Could not save " + lukas.getLastName());
+		//		}
+		//
+		//		Person maybeLukas = arm.find(Person.class).where("firstName").is("Lukas").please();
+		//
+		//		System.out.println(maybeLukas.getFirstName() + " " + maybeLukas.getLastName());
 	}
 }

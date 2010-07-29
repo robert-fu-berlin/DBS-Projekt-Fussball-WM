@@ -785,7 +785,7 @@ class ClassMapper<A extends ActiveRecord> {
 					boolean inverse = f.isAnnotationPresent(Inverse.class);
 					ParameterizedType set = (ParameterizedType) f.getGenericType();
 					Class<? extends ActiveRecord> setType = (Class<? extends ActiveRecord>) set
-							.getActualTypeArguments()[0];
+					.getActualTypeArguments()[0];
 					ClassMapper<? extends ActiveRecord> mapperForLazySet = mapper.getClassMapperForClass(setType);
 					LazySet<?> lazySet = new LazySet<ActiveRecord>(mapper,
 							(ClassMapper<ActiveRecord>) mapperForLazySet, entry.getKey(), record.getId(), inverse);

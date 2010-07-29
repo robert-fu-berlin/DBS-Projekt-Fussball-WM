@@ -7,6 +7,7 @@ import java.util.Set;
 
 import active_record.ActiveRecord;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 
@@ -66,6 +67,17 @@ public class Team extends ActiveRecord {
 	}
 
 	public boolean addPlayer(Person player) {
+		Preconditions.checkNotNull(player);
+		Set<Team> playedTeams = player.getPlayedTeams();
+		Preconditions.checkNotNull(playedTeams);
+		boolean playedInPredecessorCountry = false;
+		for (Team t : playedTeams) {
+			playedInPredecessorCountry = t.getCountry().getSuccessors().contains(country);
+			if (playedInPredecessorCountry)
+				break;
+		}
+		if (!playedTeams.isEmpty() && !playedTeams.contains(this) && !playedInPredecessorCountry)
+			throw new IllegalArgumentException();
 		player.createInversePlayed(this);
 		return players.add(player);
 	}

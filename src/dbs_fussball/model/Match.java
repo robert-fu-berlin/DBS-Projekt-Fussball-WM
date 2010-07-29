@@ -37,6 +37,8 @@ public class Match extends ActiveRecord {
 	public Match(Cup cup) {
 		Preconditions.checkNotNull(cup);
 		events = new HashSet<Event>();
+		startingLineUpTeamA = new HashSet<Person>();
+		startingLineUpTeamB = new HashSet<Person>();
 		this.cup = cup;
 	}
 
@@ -133,10 +135,10 @@ public class Match extends ActiveRecord {
 		for (Event e : events) {
 			if (e.getPrimary() != null)
 				Preconditions
-						.checkArgument(!player.equals(e.getPrimary()), "Player must not be referenced by an Event");
+				.checkArgument(!player.equals(e.getPrimary()), "Player must not be referenced by an Event");
 			if (e.getSecondary() != null)
 				Preconditions.checkArgument(!player.equals(e.getSecondary()),
-						"Player must not be referenced by an Event");
+				"Player must not be referenced by an Event");
 		}
 
 		return startingLineUpTeamB.remove(player);
@@ -151,18 +153,18 @@ public class Match extends ActiveRecord {
 	}
 	public boolean addEvent(Event event) {
 		switch (event.getType()) {
-			case EXCHANGE:
-				Preconditions.checkArgument(!isOnField(event.getSecondary(), event.getTime()),
-						"Player must be on the field");
-			case GOAL:
-			case PENALTY_GOAL:
-			case OWN_GOAL:
-			case YELLOW_CARD:
-			case RED_CARD:
-			case FOUL:
-				Preconditions.checkArgument(isOnField(event.getPrimary(), event.getTime()),
-						"Player must be on the field");
-				break;
+		case EXCHANGE:
+			Preconditions.checkArgument(!isOnField(event.getSecondary(), event.getTime()),
+					"Player must be on the field");
+		case GOAL:
+		case PENALTY_GOAL:
+		case OWN_GOAL:
+		case YELLOW_CARD:
+		case RED_CARD:
+		case FOUL:
+			Preconditions.checkArgument(isOnField(event.getPrimary(), event.getTime()),
+					"Player must be on the field");
+			break;
 		}
 
 		return events.add(event);
@@ -188,10 +190,10 @@ public class Match extends ActiveRecord {
 		Float upperBound = null;
 		loop: for (Event e : events)
 			switch (e.getType()) {
-				case RED_CARD:
-				case EXCHANGE:
-					if (person.equals(e.getPrimary()))
-						break loop;
+			case RED_CARD:
+			case EXCHANGE:
+				if (person.equals(e.getPrimary()))
+					break loop;
 			}
 
 		if (upperBound == null)
@@ -261,15 +263,15 @@ public class Match extends ActiveRecord {
 		int goals = 0;
 		for (Event e : events)
 			switch (e.getType()) {
-				case GOAL:
-				case PENALTY_GOAL:
-					if (teamA.containsPlayer(e.getPrimary()))
-						goals++;
-					break;
-				case OWN_GOAL:
-					if (teamB.containsPlayer(e.getPrimary()))
-						goals++;
-					break;
+			case GOAL:
+			case PENALTY_GOAL:
+				if (teamA.containsPlayer(e.getPrimary()))
+					goals++;
+				break;
+			case OWN_GOAL:
+				if (teamB.containsPlayer(e.getPrimary()))
+					goals++;
+				break;
 			}
 		return goals;
 	}
@@ -278,15 +280,15 @@ public class Match extends ActiveRecord {
 		int goals = 0;
 		for (Event e : events)
 			switch (e.getType()) {
-				case GOAL:
-				case PENALTY_GOAL:
-					if (teamB.containsPlayer(e.getPrimary()))
-						goals++;
-					break;
-				case OWN_GOAL:
-					if (teamA.containsPlayer(e.getPrimary()))
-						goals++;
-					break;
+			case GOAL:
+			case PENALTY_GOAL:
+				if (teamB.containsPlayer(e.getPrimary()))
+					goals++;
+				break;
+			case OWN_GOAL:
+				if (teamA.containsPlayer(e.getPrimary()))
+					goals++;
+				break;
 			}
 		return goals;
 	}
