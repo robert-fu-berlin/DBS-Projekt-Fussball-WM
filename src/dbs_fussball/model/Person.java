@@ -80,17 +80,14 @@ public class Person extends ActiveRecord {
 	public String getDisplayName() {
 		String[] names = new String[3];
 
-		if (firstName != null) {
+		if (firstName != null)
 			names[0] = firstName;
-		}
 
-		if (stageName != null) {
+		if (stageName != null)
 			names[1] = stageName;
-		}
 
-		if (lastName != null) {
+		if (lastName != null)
 			names[2] = lastName;
-		}
 
 		return Joiner.on(" ").skipNulls().join(names);
 	}
@@ -156,9 +153,8 @@ public class Person extends ActiveRecord {
 	 * @param playedTeam
 	 */
 	void createInversePlayed(Team playedTeam) {
-		if (playedTeams == null) {
+		if (playedTeams == null)
 			playedTeams = new HashSet<Team>();
-		}
 		this.playedTeams.add(playedTeam);
 	}
 
@@ -245,24 +241,20 @@ public class Person extends ActiveRecord {
 	@Override
 	public List<ValidationFailure> validate() {
 		List<ValidationFailure> failureList = new ArrayList<ValidationFailure>();
-		if ((firstName == null || lastName == null) && stageName == null) {
+		if ((firstName == null || lastName == null) && stageName == null)
 			failureList.add(new ValidationFailure("A person must have either first and last or stage name"));
-		}
-		if (weight != null && (weight < 0 || weight == Float.NaN || weight == Float.POSITIVE_INFINITY)) {
+		if (weight != null && (weight < 0 || weight == Float.NaN || weight == Float.POSITIVE_INFINITY))
 			failureList.add(new ValidationFailure("Weight must be positive, but not infinit"));
-		}
-		if (height != null && (height < 0 || height == Float.NaN || height == Float.POSITIVE_INFINITY)) {
+		if (height != null && (height < 0 || height == Float.NaN || height == Float.POSITIVE_INFINITY))
 			failureList.add(new ValidationFailure("Height must be positive, but not infinit"));
-		}
 		return failureList;
 	}
 
 	@Override
 	public List<ValidationFailure> validateAssociated() {
 		List<ValidationFailure> failureList = validate();
-		for (Team t : playedTeams) {
+		for (Team t : playedTeams)
 			failureList.addAll(t.validate());
-		}
 		return failureList;
 	}
 

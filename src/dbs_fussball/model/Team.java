@@ -22,10 +22,6 @@ public class Team extends ActiveRecord {
 	private Set<Person>	players;
 	private Person		trainer, assistantTrainer, doctor;
 
-	private Set<Match> isTeamAMatches;
-
-	private Set<Match> isTeamBMatches;
-
 	/**
 	 * Public constructor for reflection. Should <b>not</b> be called.
 	 * TODO find a way to reduce the visibility of this constructor without
@@ -48,9 +44,8 @@ public class Team extends ActiveRecord {
 
 	public boolean addAssociate(Person associate, Person... moreAssociates) {
 		associate.createInverseAssociated(this);
-		for (Person person : moreAssociates) {
+		for (Person person : moreAssociates)
 			person.createInverseAssociated(this);
-		}
 		return associates.add(associate) | Collections.addAll(associates, moreAssociates);
 	}
 
@@ -77,9 +72,8 @@ public class Team extends ActiveRecord {
 
 	public boolean addPlayer(Person player, Person... morePlayers) {
 		player.createInversePlayed(this);
-		for (Person person : morePlayers) {
+		for (Person person : morePlayers)
 			person.createInversePlayed(this);
-		}
 		return players.add(player) | Collections.addAll(players, morePlayers);
 	}
 
@@ -125,31 +119,13 @@ public class Team extends ActiveRecord {
 		doctor.createInverseDoctor(this);
 	}
 
-	public void setNation(FifaCountry nation) {
+	public void setCountry(FifaCountry nation) {
 		this.country = nation;
 	}
 
 	public void setTrainer(Person trainer) {
 		this.trainer = trainer;
 		trainer.createInverseTrained(this);
-	}
-	/**
-	 * Adds a match in which this team is team A
-	 * @param match
-	 */
-	void createInverseLinedUpForTeamA (Match match) {
-		if (isTeamAMatches == null)
-			isTeamAMatches = new HashSet<Match>();
-		this.isTeamAMatches.add(match);
-	}
-	/**
-	 * Adds a match in which this team is team B
-	 * @param match
-	 */
-	void createInverseLinedUpForTeamB (Match match) {
-		if (isTeamBMatches == null)
-			isTeamBMatches = new HashSet<Match>();
-		this.isTeamBMatches.add(match);
 	}
 
 	@Override

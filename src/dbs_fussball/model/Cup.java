@@ -168,68 +168,52 @@ public class Cup extends ActiveRecord {
 
 			cup.teams = new HashSet<Team>();
 
-			//			cup.teamGroupA = new HashSet<Team>();
 			for (Team t : teamGroupA) {
 				if (cup.teams.contains(t))
 					throw new IllegalArgumentException();
 				cup.teams.add(t);
-				//				cup.teamGroupA.add(t);
 			}
 
-			//			cup.teamGroupB = new HashSet<Team>();
 			for (Team t : teamGroupB) {
 				if (cup.teams.contains(t))
 					throw new IllegalArgumentException();
 				cup.teams.add(t);
-				//				cup.teamGroupB.add(t);
 			}
 
-			//			cup.teamGroupC = new HashSet<Team>();
 			for (Team t : teamGroupC) {
 				if (cup.teams.contains(t))
 					throw new IllegalArgumentException();
 				cup.teams.add(t);
-				//				cup.teamGroupC.add(t);
 			}
 
-			//			cup.teamGroupD = new HashSet<Team>();
 			for (Team t : teamGroupD) {
 				if (cup.teams.contains(t))
 					throw new IllegalArgumentException();
 				cup.teams.add(t);
-				//				cup.teamGroupD.add(t);
 			}
 
-			//			cup.teamGroupE = new HashSet<Team>();
 			for (Team t : teamGroupE) {
 				if (cup.teams.contains(t))
 					throw new IllegalArgumentException();
 				cup.teams.add(t);
-				//				cup.teamGroupE.add(t);
 			}
 
-			//			cup.teamGroupF = new HashSet<Team>();
 			for (Team t : teamGroupF) {
 				if (cup.teams.contains(t))
 					throw new IllegalArgumentException();
 				cup.teams.add(t);
-				//				cup.teamGroupF.add(t);
 			}
 
-			//			cup.teamGroupG = new HashSet<Team>();
 			for (Team t : teamGroupG) {
 				if (cup.teams.contains(t))
 					throw new IllegalArgumentException();
 				cup.teams.add(t);
-				//				cup.teamGroupG.add(t);
 			}
 
-			//			cup.teamGroupH = new HashSet<Team>();
 			for (Team t : teamGroupH) {
 				if (cup.teams.contains(t))
 					throw new IllegalArgumentException();
 				cup.teams.add(t);
-				//				cup.teamGroupH.add(t);
 			}
 
 			if (cup.teams.size() != 32)
