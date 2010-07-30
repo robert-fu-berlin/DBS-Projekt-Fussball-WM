@@ -15,9 +15,6 @@ import dbs_fussball.model.User;
 import dbs_fussball.model.Usergroup;
 
 public class Main {
-	/**
-	 * Just running some inital queries until we get proper tests
-	 */
 
 	public static void main(String[] args) {
 		List<Class<? extends ActiveRecord>> classes = new ArrayList<Class<? extends ActiveRecord>>();
@@ -50,19 +47,5 @@ public class Main {
 				System.err.println(e.getLocalizedMessage());
 			}
 		}
-		System.out.println();
-
-		//		Person lukas = new Person("Lukas", "Podolski");
-		//		lukas.setStageName("Poldi");
-		//
-		//		try {
-		//			arm.save(lukas);
-		//		} catch (SQLException e) {
-		//			System.err.println("Could not save " + lukas.getLastName());
-		//		}
-		//
-		//		Person maybeLukas = arm.find(Person.class).where("firstName").is("Lukas").please();
-		//
-		//		System.out.println(maybeLukas.getFirstName() + " " + maybeLukas.getLastName());
 	}
 }
