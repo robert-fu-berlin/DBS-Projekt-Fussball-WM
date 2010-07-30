@@ -200,9 +200,10 @@ public class Person extends ActiveRecord {
 
 	/**
 	 * Adds a match in which this person is lined up for team A
+	 * 
 	 * @param match
 	 */
-	void createInverseLinedUpForTeamA (Match match) {
+	void createInverseLinedUpForTeamA(Match match) {
 		if (linedUpForTeamAMatches == null)
 			linedUpForTeamAMatches = new HashSet<Match>();
 		this.linedUpForTeamAMatches.add(match);
@@ -210,9 +211,10 @@ public class Person extends ActiveRecord {
 
 	/**
 	 * Adds a match in which this person is lined up for team B
+	 * 
 	 * @param match
 	 */
-	void createInverseLinedUpForTeamB (Match match) {
+	void createInverseLinedUpForTeamB(Match match) {
 		if (linedUpForTeamBMatches == null)
 			linedUpForTeamBMatches = new HashSet<Match>();
 		this.linedUpForTeamBMatches.add(match);

@@ -14,6 +14,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.postgresql.util.PSQLException;
 
 import active_record.ActiveRecord;
 import active_record.ActiveRecordMapper;
@@ -78,10 +79,10 @@ public class UseCases {
 		classes.add(Match.class);
 
 		/**
-		 * 
+		 *
 		 * Hier die Datenbank - Credentials eintragen
 		 * Bsp.: arm = new ActiveRecordMapper("Datenbankname", "User", "Passwort", "Prefix fuer die Datenbank")
-		 * 
+		 *
 		 */
 		arm = new ActiveRecordMapper(dbsName, user, password, prefix);
 
@@ -160,7 +161,6 @@ public class UseCases {
 
 	@Test
 	public void turnierAnlegen() throws Exception {
-		Connection connection = null;
 		String procedure = "CREATE OR REPLACE FUNCTION CreateCup (text) RETURNS bigint AS $$\n" +
 		"DECLARE\n"+
 		"countries text[];\n"+
@@ -284,7 +284,15 @@ public class UseCases {
 		"END LOOP;\n"+
 		"RETURN cupID;\n"+
 		"END; $$ LANGUAGE 'plpgsql';";
-		connection = DriverManager.getConnection("jdbc:postgresql:" + dbsName, user, password);
+
+		Connection connection = DriverManager.getConnection("jdbc:postgresql:" + dbsName, user, password);
+
+		try {
+			connection.createStatement().execute("CREATE LANGUAGE 'plpgsql';");
+		} catch (PSQLException e) {
+			System.err.println("Language \"plpgsql\" already exists.");
+		}
+
 		Statement createProcedure = connection.createStatement();
 		createProcedure.execute(procedure);
 		CallableStatement createDB = connection.prepareCall("{ call createCup(?) }");
