@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableBiMap.Builder;
 
 class ClassMapper<A extends ActiveRecord> {
 
-	private final String LEFT_COLUMN = "cheesecake", RIGHT_COLUMN = "cherrybomb";
+	private final String						LEFT_COLUMN	= "left_column", RIGHT_COLUMN = "right_column";
 
 	// TODO: add bimap mapping column names to member names and back
 

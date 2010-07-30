@@ -194,7 +194,10 @@ public class UseCases {
 		"        counter2 := counter1 + 1;\n"+
 		"        WHILE (counter2 < array_lower(countries, 1) + 4) LOOP\n"+
 		"                INSERT INTO " + prefix + "_match (team_a,team_b,created_at,updated_at) VALUES (teamIDs[counter1],teamIDs[counter2],currentTime,currentTime) RETURNING id INTO groupMatchID;\n"+
-		"                INSERT INTO " + prefix + "_cup_matches_group_a (cheesecake,cherrybomb) VALUES (cupID, groupMatchID);\n"+
+ "                INSERT INTO "
+				+ prefix
+				+ "_cup_matches_group_a (left_column,right_column) VALUES (cupID, groupMatchID);\n"
+				+
 		"                counter2 = counter2 + 1;\n"+
 		"        END LOOP;\n"+
 		"        counter1 = counter1 + 1;\n"+
@@ -205,7 +208,10 @@ public class UseCases {
 		"        counter2 := counter1 + 1;\n"+
 		"        WHILE (counter2 < array_lower(countries, 1) + 8) LOOP\n"+
 		"                INSERT INTO " + prefix + "_match (team_a,team_b,created_at,updated_at) VALUES (teamIDs[counter1],teamIDs[counter2],currentTime,currentTime) RETURNING id INTO groupMatchID;\n"+
-		"                INSERT INTO " + prefix + "_cup_matches_group_b (cheesecake,cherrybomb) VALUES (cupID, groupMatchID);\n"+
+ "                INSERT INTO "
+				+ prefix
+				+ "_cup_matches_group_b (left_column,right_column) VALUES (cupID, groupMatchID);\n"
+				+
 		"                counter2 = counter2 + 1;\n"+
 		"        END LOOP;\n"+
 		"        counter1 = counter1 + 1;\n"+
@@ -216,7 +222,10 @@ public class UseCases {
 		"        counter2 := counter1 + 1;\n"+
 		"        WHILE (counter2 < array_lower(countries, 1) + 12) LOOP\n"+
 		"                INSERT INTO " + prefix + "_match (team_a,team_b,created_at,updated_at) VALUES (teamIDs[counter1],teamIDs[counter2],currentTime,currentTime) RETURNING id INTO groupMatchID;\n"+
-		"                INSERT INTO " + prefix + "_cup_matches_group_c (cheesecake,cherrybomb) VALUES (cupID, groupMatchID);\n"+
+ "                INSERT INTO "
+				+ prefix
+				+ "_cup_matches_group_c (left_column,right_column) VALUES (cupID, groupMatchID);\n"
+				+
 		"                counter2 = counter2 + 1;\n"+
 		"        END LOOP;\n"+
 		"        counter1 = counter1 + 1;\n"+
@@ -227,7 +236,10 @@ public class UseCases {
 		"        counter2 := counter1 + 1;\n"+
 		"        WHILE (counter2 < array_lower(countries, 1) + 16) LOOP\n"+
 		"                INSERT INTO " + prefix + "_match (team_a,team_b,created_at,updated_at) VALUES (teamIDs[counter1], teamIDs[counter2],currentTime,currentTime) RETURNING id INTO groupMatchID;\n"+
-		"                INSERT INTO " + prefix + "_cup_matches_group_d (cheesecake,cherrybomb) VALUES (cupID, groupMatchID);\n"+
+ "                INSERT INTO "
+				+ prefix
+				+ "_cup_matches_group_d (left_column,right_column) VALUES (cupID, groupMatchID);\n"
+				+
 		"                counter2 = counter2 + 1;\n"+
 		"        END LOOP;\n"+
 		"        counter1 = counter1 + 1;\n"+
@@ -238,7 +250,10 @@ public class UseCases {
 		"        counter2 := counter1 + 1;\n"+
 		"                WHILE (counter2 < array_lower(countries, 1) + 20) LOOP\n"+
 		"                INSERT INTO " + prefix + "_match (team_a,team_b,created_at,updated_at) VALUES (teamIDs[counter1],teamIDs[counter2],currentTime,currentTime) RETURNING id INTO groupMatchID;\n"+
-		"                INSERT INTO " + prefix + "_cup_matches_group_e (cheesecake,cherrybomb) VALUES (cupID, groupMatchID);\n"+
+ "                INSERT INTO "
+				+ prefix
+				+ "_cup_matches_group_e (left_column,right_column) VALUES (cupID, groupMatchID);\n"
+				+
 		"                counter2 = counter2 + 1;\n"+
 		"        END LOOP;\n"+
 		"        counter1 = counter1 + 1;\n"+
@@ -249,7 +264,10 @@ public class UseCases {
 		"        counter2 := counter1 + 1;\n"+
 		"        WHILE (counter2 < array_lower(countries, 1) + 24) LOOP\n"+
 		"                INSERT INTO " + prefix + "_match (team_a,team_b,created_at,updated_at) VALUES (teamIDs[counter1],teamIDs[counter2],currentTime,currentTime) RETURNING id INTO groupMatchID;\n"+
-		"                INSERT INTO " + prefix + "_cup_matches_group_f (cheesecake,cherrybomb) VALUES (cupID, groupMatchID);\n"+
+ "                INSERT INTO "
+				+ prefix
+				+ "_cup_matches_group_f (left_column,right_column) VALUES (cupID, groupMatchID);\n"
+				+
 		"                counter2 = counter2 + 1;\n"+
 		"        END LOOP;\n"+
 		"        counter1 = counter1 + 1;\n"+
@@ -260,7 +278,10 @@ public class UseCases {
 		"        counter2 := counter1 + 1;\n"+
 		"        WHILE (counter2 < array_lower(countries, 1) + 28) LOOP\n"+
 		"                INSERT INTO " + prefix + "_match (team_a,team_b,created_at,updated_at) VALUES (teamIDs[counter1],teamIDs[counter2],currentTime,currentTime) RETURNING id INTO groupMatchID;\n"+
-		"                INSERT INTO " + prefix + "_cup_matches_group_g (cheesecake,cherrybomb) VALUES (cupID, groupMatchID);\n"+
+ "                INSERT INTO "
+				+ prefix
+				+ "_cup_matches_group_g (left_column,right_column) VALUES (cupID, groupMatchID);\n"
+				+
 		"                counter2 = counter2 + 1;\n"+
 		"        END LOOP;\n"+
 		"        counter1 = counter1 + 1;\n"+
@@ -271,7 +292,10 @@ public class UseCases {
 		"        counter2 := counter1 + 1;\n"+
 		"        WHILE (counter2 < array_lower(countries, 1) + 32) LOOP\n"+
 		"                INSERT INTO " + prefix + "_match (team_a,team_b,created_at,updated_at) VALUES (teamIDs[counter1],teamIDs[counter2],currentTime,currentTime) RETURNING id INTO groupMatchID;\n"+
-		"                INSERT INTO " + prefix + "_cup_matches_group_h (cheesecake,cherrybomb) VALUES (cupID, groupMatchID);\n"+
+ "                INSERT INTO "
+				+ prefix
+				+ "_cup_matches_group_h (left_column,right_column) VALUES (cupID, groupMatchID);\n"
+				+
 		"                counter2 = counter2 + 1;\n"+
 		"        END LOOP;\n"+
 		"        counter1 = counter1 + 1;\n"+
@@ -279,7 +303,10 @@ public class UseCases {
 		"--add cup_teams\n"+
 		"counter1 := array_lower(teamIDs, 1);\n"+
 		"WHILE (counter1 <= array_upper(teamIDs, 1)) LOOP\n"+
-		"        INSERT INTO " + prefix + "_cup_teams (cheesecake, cherrybomb) VALUES (cupID, teamIDs[counter1]);\n"+
+ "        INSERT INTO "
+				+ prefix
+				+ "_cup_teams (left_column, right_column) VALUES (cupID, teamIDs[counter1]);\n"
+				+
 		"        counter1 = counter1 +1;\n"+
 		"END LOOP;\n"+
 		"RETURN cupID;\n"+

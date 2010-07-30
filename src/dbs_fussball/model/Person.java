@@ -29,15 +29,6 @@ public class Person extends ActiveRecord {
 	@Inverse("dbs_fussball.model.Team.associates")
 	private Set<Team> associatedTeams;
 
-	private Set<Match> linedUpForTeamAMatches;
-
-	private Set<Match> linedUpForTeamBMatches;
-
-	private Set<Event> isPrimaryPersonEvents;
-
-	private Set<Event> isSecondaryPersonEvents;
-
-
 	/**
 	 * Public constructor for reflection.
 	 * TODO find a way to reduce the visibility of this constructor without
@@ -196,48 +187,6 @@ public class Person extends ActiveRecord {
 		if (associatedTeams == null)
 			associatedTeams = new HashSet<Team>();
 		this.associatedTeams.add(assosiatedTeam);
-	}
-
-	/**
-	 * Adds a match in which this person is lined up for team A
-	 * 
-	 * @param match
-	 */
-	void createInverseLinedUpForTeamA(Match match) {
-		if (linedUpForTeamAMatches == null)
-			linedUpForTeamAMatches = new HashSet<Match>();
-		this.linedUpForTeamAMatches.add(match);
-	}
-
-	/**
-	 * Adds a match in which this person is lined up for team B
-	 * 
-	 * @param match
-	 */
-	void createInverseLinedUpForTeamB(Match match) {
-		if (linedUpForTeamBMatches == null)
-			linedUpForTeamBMatches = new HashSet<Match>();
-		this.linedUpForTeamBMatches.add(match);
-	}
-
-	/**
-	 * Adds an event in which this person is the primary person
-	 * @param match
-	 */
-	void createInversePrimaryPerson (Event event) {
-		if (isPrimaryPersonEvents == null)
-			isPrimaryPersonEvents = new HashSet<Event>();
-		this.isPrimaryPersonEvents.add(event);
-	}
-
-	/**
-	 * Adds an event in which this person is the secondary person
-	 * @param match
-	 */
-	void createInverseSecondaryPerson (Event event) {
-		if (isSecondaryPersonEvents == null)
-			isSecondaryPersonEvents = new HashSet<Event>();
-		this.isSecondaryPersonEvents.add(event);
 	}
 
 	@Override
